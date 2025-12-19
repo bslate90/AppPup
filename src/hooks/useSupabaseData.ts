@@ -103,13 +103,18 @@ export function useSupabaseData() {
             const { id: frontendId, ...profileWithoutId } = newProfile;
             const dbData = toSnakeCase(profileWithoutId);
 
+            console.log('Saving profile to Supabase:', dbData);
+
             if (profile?.id) {
                 // Update existing - use the database UUID
                 const { error } = await supabase
                     .from('puppy_profiles')
                     .update(dbData)
                     .eq('id', profile.id);
-                if (error) throw error;
+                if (error) {
+                    console.error('Supabase update error:', error);
+                    throw new Error(error.message || error.details || 'Failed to update profile');
+                }
                 setProfile({ ...newProfile, id: profile.id });
             } else {
                 // Insert new - let Supabase generate UUID
@@ -118,7 +123,10 @@ export function useSupabaseData() {
                     .insert(dbData)
                     .select()
                     .single();
-                if (error) throw error;
+                if (error) {
+                    console.error('Supabase insert error:', error);
+                    throw new Error(error.message || error.details || 'Failed to insert profile');
+                }
                 if (data) {
                     const savedProfile = toCamelCase<PuppyProfile>(data);
                     setProfile(savedProfile);
@@ -126,7 +134,8 @@ export function useSupabaseData() {
             }
         } catch (err) {
             console.error('Error saving profile:', err);
-            setError(err instanceof Error ? err.message : 'Failed to save profile');
+            const message = err instanceof Error ? err.message : 'Failed to save profile';
+            setError(message);
         }
     }, [profile?.id]);
 
