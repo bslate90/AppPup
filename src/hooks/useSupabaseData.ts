@@ -188,16 +188,28 @@ export function useSupabaseData() {
             // Delete existing schedule
             await supabase.from('health_schedule').delete().eq('profile_id', profile.id);
 
-            // Insert new schedule
-            const dbData = schedule.map(entry => ({
-                ...toSnakeCase(entry),
-                profile_id: profile.id
-            }));
+            // Insert new schedule - exclude frontend ID, let Supabase generate UUIDs
+            const dbData = schedule.map(entry => {
+                const { id, ...entryWithoutId } = entry;
+                return {
+                    ...toSnakeCase(entryWithoutId),
+                    profile_id: profile.id
+                };
+            });
 
             const { error } = await supabase.from('health_schedule').insert(dbData);
             if (error) throw error;
 
-            setHealthSchedule(schedule);
+            // Reload from Supabase to get proper UUIDs
+            const { data: savedSchedule } = await supabase
+                .from('health_schedule')
+                .select('*')
+                .eq('profile_id', profile.id)
+                .order('due_date');
+
+            if (savedSchedule) {
+                setHealthSchedule(savedSchedule.map(row => toCamelCase<HealthScheduleEntry>(row)));
+            }
         } catch (err) {
             console.error('Error generating schedule:', err);
             setError(err instanceof Error ? err.message : 'Failed to generate schedule');
