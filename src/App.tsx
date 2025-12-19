@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSupabaseData } from './hooks/useSupabaseData';
-import type { TabId } from './types';
+import type { TabId, WeightUnit } from './types';
 import Header from './components/Header';
 import Navigation from './components/Navigation';
 import Dashboard from './components/Dashboard';
@@ -13,6 +13,7 @@ import ProfileModal from './components/ProfileModal';
 function App() {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [weightUnit, setWeightUnit] = useState<WeightUnit>('oz');
 
   const {
     loading,
@@ -32,6 +33,9 @@ function App() {
     addWeightEntry,
     deleteWeightEntry,
     addVitalsEntry,
+    todayFeedings,
+    addFeedingEntry,
+    deleteFeedingEntry,
     exportVetReport,
   } = useSupabaseData();
 
@@ -86,7 +90,12 @@ function App() {
             currentWeight={currentWeight}
             ageInWeeks={ageInWeeks}
             foodSettings={foodSettings}
+            weightUnit={weightUnit}
+            todayFeedings={todayFeedings}
             onUpdateFood={updateFoodSettings}
+            onLogFeeding={addFeedingEntry}
+            onDeleteFeeding={deleteFeedingEntry}
+            onUnitChange={setWeightUnit}
           />
         );
 

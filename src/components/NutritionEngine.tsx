@@ -7,14 +7,20 @@ import {
     Utensils,
     Flame
 } from 'lucide-react';
-import type { FoodAnalysis, NutritionResult } from '../types';
+import type { FoodAnalysis, NutritionResult, FeedingEntry, WeightUnit } from '../types';
 import { calculateNutrition } from '../utils/vetFormulas';
+import FeedTracker from './FeedTracker';
 
 interface NutritionEngineProps {
     currentWeight: number | null; // in grams
     ageInWeeks: number | null;
     foodSettings: FoodAnalysis | null;
+    weightUnit: WeightUnit;
+    todayFeedings: FeedingEntry[];
     onUpdateFood: (food: FoodAnalysis) => void;
+    onLogFeeding: (entry: Omit<FeedingEntry, 'id'>) => void;
+    onDeleteFeeding: (id: string) => void;
+    onUnitChange: (unit: WeightUnit) => void;
 }
 
 const DEFAULT_FOOD: FoodAnalysis = {
@@ -30,7 +36,12 @@ export function NutritionEngine({
     currentWeight,
     ageInWeeks,
     foodSettings,
+    weightUnit,
+    todayFeedings,
     onUpdateFood,
+    onLogFeeding,
+    onDeleteFeeding,
+    onUnitChange,
 }: NutritionEngineProps) {
     const [food, setFood] = useState<FoodAnalysis>(foodSettings || DEFAULT_FOOD);
     const [result, setResult] = useState<NutritionResult | null>(null);
@@ -55,6 +66,19 @@ export function NutritionEngine({
 
     return (
         <div className="space-y-4 animate-fade-in">
+            {/* Feed Tracker - Only show if we have nutrition results */}
+            {result && (
+                <FeedTracker
+                    todayFeedings={todayFeedings}
+                    recommendedMealsPerDay={result.mealsPerDay}
+                    gramsPerMeal={result.gramsPerMeal}
+                    weightUnit={weightUnit}
+                    onLogFeeding={onLogFeeding}
+                    onDeleteFeeding={onDeleteFeeding}
+                    onUnitChange={onUnitChange}
+                />
+            )}
+
             {/* Header */}
             <div className="card">
                 <div className="gradient-header">

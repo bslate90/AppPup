@@ -138,3 +138,61 @@ export interface ResourceLink {
     description: string;
     category: 'vaccination' | 'nutrition' | 'growth' | 'parasites';
 }
+
+/**
+ * Feeding log entry for tracking meals
+ */
+export interface FeedingEntry {
+    id: string;
+    fedAt: string;      // ISO timestamp
+    amountGrams?: number;
+    mealType: 'regular' | 'snack' | 'treat';
+    notes?: string;
+}
+
+/**
+ * Weight unit preference for display
+ */
+export type WeightUnit = 'g' | 'oz' | 'lbs';
+
+/**
+ * Weight conversion utilities
+ */
+export const WeightConverter = {
+    // Convert grams to other units
+    fromGrams: (grams: number, unit: WeightUnit): number => {
+        switch (unit) {
+            case 'oz':
+                return Math.round((grams / 28.3495) * 10) / 10;
+            case 'lbs':
+                return Math.round((grams / 453.592) * 100) / 100;
+            default:
+                return grams;
+        }
+    },
+
+    // Convert other units to grams
+    toGrams: (value: number, unit: WeightUnit): number => {
+        switch (unit) {
+            case 'oz':
+                return Math.round(value * 28.3495);
+            case 'lbs':
+                return Math.round(value * 453.592);
+            default:
+                return value;
+        }
+    },
+
+    // Format weight with unit label
+    format: (grams: number, unit: WeightUnit): string => {
+        const converted = WeightConverter.fromGrams(grams, unit);
+        return `${converted}${unit}`;
+    },
+
+    // Unit labels
+    labels: {
+        g: 'grams',
+        oz: 'ounces',
+        lbs: 'pounds'
+    } as Record<WeightUnit, string>
+};

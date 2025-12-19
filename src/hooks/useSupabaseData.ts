@@ -5,7 +5,8 @@ import type {
     FoodAnalysis,
     HealthScheduleEntry,
     WeightEntry,
-    VitalsEntry
+    VitalsEntry,
+    FeedingEntry
 } from '../types';
 import { generateFullHealthSchedule, getAlertStatus } from '../utils/vetFormulas';
 
@@ -41,6 +42,7 @@ export function useSupabaseData() {
     const [healthSchedule, setHealthSchedule] = useState<HealthScheduleEntry[]>([]);
     const [weightLog, setWeightLog] = useState<WeightEntry[]>([]);
     const [vitalsLog, setVitalsLog] = useState<VitalsEntry[]>([]);
+    const [feedingLog, setFeedingLog] = useState<FeedingEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -64,11 +66,12 @@ export function useSupabaseData() {
                     // Load related data using profile ID
                     const profileId = profileData.id;
 
-                    const [foodRes, healthRes, weightRes, vitalsRes] = await Promise.all([
+                    const [foodRes, healthRes, weightRes, vitalsRes, feedingRes] = await Promise.all([
                         supabase.from('food_settings').select('*').eq('profile_id', profileId).single(),
                         supabase.from('health_schedule').select('*').eq('profile_id', profileId).order('due_date'),
                         supabase.from('weight_log').select('*').eq('profile_id', profileId).order('date'),
-                        supabase.from('vitals_log').select('*').eq('profile_id', profileId).order('date', { ascending: false })
+                        supabase.from('vitals_log').select('*').eq('profile_id', profileId).order('date', { ascending: false }),
+                        supabase.from('feeding_log').select('*').eq('profile_id', profileId).order('fed_at', { ascending: false })
                     ]);
 
                     if (foodRes.data) {
@@ -83,6 +86,9 @@ export function useSupabaseData() {
                     }
                     if (vitalsRes.data) {
                         setVitalsLog(vitalsRes.data.map(row => toCamelCase<VitalsEntry>(row)));
+                    }
+                    if (feedingRes.data) {
+                        setFeedingLog(feedingRes.data.map(row => toCamelCase<FeedingEntry>(row)));
                     }
                 }
             } catch (err) {
@@ -292,6 +298,40 @@ export function useSupabaseData() {
         }
     }, []);
 
+    // ============ Feeding Log ============
+    const addFeedingEntry = useCallback(async (entry: Omit<FeedingEntry, 'id'>) => {
+        if (!profile?.id) return;
+
+        try {
+            const dbData = { ...toSnakeCase(entry), profile_id: profile.id };
+            const { data, error } = await supabase
+                .from('feeding_log')
+                .insert(dbData)
+                .select()
+                .single();
+            if (error) throw error;
+
+            if (data) {
+                const newEntry = toCamelCase<FeedingEntry>(data);
+                setFeedingLog(prev => [newEntry, ...prev]);
+            }
+        } catch (err) {
+            console.error('Error adding feeding entry:', err);
+            setError(err instanceof Error ? err.message : 'Failed to log feeding');
+        }
+    }, [profile?.id]);
+
+    const deleteFeedingEntry = useCallback(async (id: string) => {
+        try {
+            const { error } = await supabase.from('feeding_log').delete().eq('id', id);
+            if (error) throw error;
+            setFeedingLog(prev => prev.filter(e => e.id !== id));
+        } catch (err) {
+            console.error('Error deleting feeding entry:', err);
+            setError(err instanceof Error ? err.message : 'Failed to delete feeding');
+        }
+    }, []);
+
     // ============ Computed Values ============
     const currentWeight = useMemo(() => {
         if (weightLog.length === 0) return null;
@@ -318,6 +358,12 @@ export function useSupabaseData() {
             .filter((e) => e.status === 'due_soon' || e.status === 'due_now' || e.status === 'overdue')
             .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
     }, [healthSchedule]);
+
+    // Today's feedings for quick tracking
+    const todayFeedings = useMemo(() => {
+        const today = new Date().toISOString().split('T')[0];
+        return feedingLog.filter(entry => entry.fedAt.startsWith(today));
+    }, [feedingLog]);
 
     // ============ Export ============
     const exportVetReport = useCallback(() => {
@@ -368,11 +414,13 @@ export function useSupabaseData() {
         healthSchedule,
         weightLog,
         vitalsLog,
+        feedingLog,
 
         // Computed
         currentWeight,
         ageInWeeks,
         upcomingAlerts,
+        todayFeedings,
 
         // Actions
         updateProfile,
@@ -383,6 +431,8 @@ export function useSupabaseData() {
         deleteWeightEntry,
         addVitalsEntry,
         deleteVitalsEntry,
+        addFeedingEntry,
+        deleteFeedingEntry,
         exportVetReport,
         resetData,
     };
