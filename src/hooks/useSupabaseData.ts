@@ -99,17 +99,20 @@ export function useSupabaseData() {
     // ============ Profile Management ============
     const updateProfile = useCallback(async (newProfile: PuppyProfile) => {
         try {
-            const dbData = toSnakeCase(newProfile);
+            // Remove frontend-generated id for insert (Supabase generates UUID)
+            const { id: frontendId, ...profileWithoutId } = newProfile;
+            const dbData = toSnakeCase(profileWithoutId);
 
             if (profile?.id) {
-                // Update existing
+                // Update existing - use the database UUID
                 const { error } = await supabase
                     .from('puppy_profiles')
                     .update(dbData)
                     .eq('id', profile.id);
                 if (error) throw error;
+                setProfile({ ...newProfile, id: profile.id });
             } else {
-                // Insert new
+                // Insert new - let Supabase generate UUID
                 const { data, error } = await supabase
                     .from('puppy_profiles')
                     .insert(dbData)
@@ -117,10 +120,10 @@ export function useSupabaseData() {
                     .single();
                 if (error) throw error;
                 if (data) {
-                    newProfile = toCamelCase<PuppyProfile>(data);
+                    const savedProfile = toCamelCase<PuppyProfile>(data);
+                    setProfile(savedProfile);
                 }
             }
-            setProfile(newProfile);
         } catch (err) {
             console.error('Error saving profile:', err);
             setError(err instanceof Error ? err.message : 'Failed to save profile');
