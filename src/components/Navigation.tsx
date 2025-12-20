@@ -22,9 +22,9 @@ const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
 
 export function Navigation({ activeTab, onTabChange }: NavigationProps) {
     return (
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-lg z-40 safe-area-pb">
-            <div className="max-w-4xl mx-auto">
-                <div className="nav-tabs border-0 shadow-none rounded-none">
+        <nav className="fixed bottom-2.5 left-4 right-4 z-40 safe-area-pb">
+            <div className="max-w-md mx-auto">
+                <div className="glassmorphic-nav">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
