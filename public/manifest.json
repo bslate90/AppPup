@@ -1,0 +1,18 @@
+{
+    "name": "AppPup - Puppy Health & Nutrition",
+    "short_name": "AppPup",
+    "description": "Health & Nutrition Command Center for your puppy",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0f172a",
+    "theme_color": "#06b6d4",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/dr-pup-logo.jpg",
+            "sizes": "512x512",
+            "type": "image/jpeg",
+            "purpose": "any maskable"
+        }
+    ]
+}

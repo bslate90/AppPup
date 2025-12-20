@@ -1,16 +1,22 @@
-import { Dog, Sparkles } from 'lucide-react';
+import { Moon, Sun, Sparkles } from 'lucide-react';
 
 interface HeaderProps {
     puppyName?: string;
+    isDarkMode?: boolean;
+    onToggleDarkMode?: () => void;
 }
 
-export function Header({ puppyName }: HeaderProps) {
+export function Header({ puppyName, isDarkMode, onToggleDarkMode }: HeaderProps) {
     return (
         <header className="bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500 text-white p-4 shadow-lg">
             <div className="max-w-4xl mx-auto flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
-                        <Dog className="w-6 h-6" />
+                    <div className="bg-white/20 p-1 rounded-xl backdrop-blur-sm overflow-hidden">
+                        <img
+                            src="/dr-pup-logo.jpg"
+                            alt="AppPup Logo"
+                            className="w-10 h-10 rounded-lg object-cover"
+                        />
                     </div>
                     <div>
                         <h1 className="text-lg font-bold flex items-center gap-2">
@@ -22,12 +28,27 @@ export function Header({ puppyName }: HeaderProps) {
                         </p>
                     </div>
                 </div>
-                {puppyName && (
-                    <div className="text-right">
-                        <p className="text-xs text-white/80">Caring for</p>
-                        <p className="font-semibold">{puppyName}</p>
-                    </div>
-                )}
+                <div className="flex items-center gap-4">
+                    {puppyName && (
+                        <div className="text-right hidden sm:block">
+                            <p className="text-xs text-white/80">Caring for</p>
+                            <p className="font-semibold">{puppyName}</p>
+                        </div>
+                    )}
+                    {onToggleDarkMode && (
+                        <button
+                            onClick={onToggleDarkMode}
+                            className="p-2 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-200"
+                            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                        >
+                            {isDarkMode ? (
+                                <Sun className="w-5 h-5 text-amber-200" />
+                            ) : (
+                                <Moon className="w-5 h-5" />
+                            )}
+                        </button>
+                    )}
+                </div>
             </div>
         </header>
     );

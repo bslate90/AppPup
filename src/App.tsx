@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSupabaseData } from './hooks/useSupabaseData';
 import type { TabId, WeightUnit } from './types';
 import Header from './components/Header';
@@ -14,6 +14,24 @@ function App() {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [weightUnit, setWeightUnit] = useState<WeightUnit>('oz');
+
+  // Dark mode state with localStorage persistence
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('apppup-dark-mode');
+    if (saved !== null) {
+      return JSON.parse(saved);
+    }
+    // Check system preference
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  // Apply dark mode class to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+    localStorage.setItem('apppup-dark-mode', JSON.stringify(isDarkMode));
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => setIsDarkMode((prev: boolean) => !prev);
 
   const {
     loading,
@@ -132,7 +150,7 @@ function App() {
   return (
     <div className="min-h-screen pb-20">
       {/* Header */}
-      <Header puppyName={profile?.name} />
+      <Header puppyName={profile?.name} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto p-4">
