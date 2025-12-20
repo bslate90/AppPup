@@ -21,12 +21,15 @@ export interface PuppyProfile {
  * Food Guaranteed Analysis - Values from the food bag
  */
 export interface FoodAnalysis {
+    id: string;
     brandName: string;
     protein: number;  // %
     fat: number;      // %
     fiber: number;    // %
     moisture: number; // %
     ash: number;      // % (default to 7 if not listed)
+    type: 'food' | 'treat';
+    isDefault?: boolean;
 }
 
 /**
@@ -104,7 +107,7 @@ export interface VitalsEntry {
  */
 export interface AppData {
     profile: PuppyProfile | null;
-    foodSettings: FoodAnalysis | null;
+    foodBrands: FoodAnalysis[];
     healthSchedule: HealthScheduleEntry[];
     weightLog: WeightEntry[];
     vitalsLog: VitalsEntry[];
@@ -116,7 +119,7 @@ export interface AppData {
  */
 export const DEFAULT_APP_DATA: AppData = {
     profile: null,
-    foodSettings: null,
+    foodBrands: [],
     healthSchedule: [],
     weightLog: [],
     vitalsLog: [],
@@ -147,6 +150,7 @@ export interface FeedingEntry {
     fedAt: string;      // ISO timestamp
     amountGrams?: number;
     mealType: 'regular' | 'snack' | 'treat';
+    foodBrandId?: string; // Reference to FoodAnalysis.id
     notes?: string;
 }
 

@@ -152,7 +152,7 @@ export function usePuppyData() {
         // Data
         data,
         profile: data.profile,
-        foodSettings: data.foodSettings,
+        foodBrands: data.foodBrands || [],
         healthSchedule: data.healthSchedule,
         weightLog: data.weightLog,
         vitalsLog: data.vitalsLog,

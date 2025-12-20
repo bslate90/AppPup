@@ -38,7 +38,7 @@ function toSnakeCase<T extends object>(obj: T): Record<string, unknown> {
  */
 export function useSupabaseData() {
     const [profile, setProfile] = useState<PuppyProfile | null>(null);
-    const [foodSettings, setFoodSettings] = useState<FoodAnalysis | null>(null);
+    const [foodBrands, setFoodBrands] = useState<FoodAnalysis[]>([]);
     const [healthSchedule, setHealthSchedule] = useState<HealthScheduleEntry[]>([]);
     const [weightLog, setWeightLog] = useState<WeightEntry[]>([]);
     const [vitalsLog, setVitalsLog] = useState<VitalsEntry[]>([]);
@@ -67,7 +67,7 @@ export function useSupabaseData() {
                     const profileId = profileData.id;
 
                     const [foodRes, healthRes, weightRes, vitalsRes, feedingRes] = await Promise.all([
-                        supabase.from('food_settings').select('*').eq('profile_id', profileId).single(),
+                        supabase.from('food_settings').select('*').eq('profile_id', profileId).order('created_at'),
                         supabase.from('health_schedule').select('*').eq('profile_id', profileId).order('due_date'),
                         supabase.from('weight_log').select('*').eq('profile_id', profileId).order('date'),
                         supabase.from('vitals_log').select('*').eq('profile_id', profileId).order('date', { ascending: false }),
@@ -75,8 +75,7 @@ export function useSupabaseData() {
                     ]);
 
                     if (foodRes.data) {
-                        const { profile_id, created_at, id, ...foodData } = foodRes.data;
-                        setFoodSettings(toCamelCase<FoodAnalysis>(foodData));
+                        setFoodBrands(foodRes.data.map(row => toCamelCase<FoodAnalysis>(row)));
                     }
                     if (healthRes.data) {
                         setHealthSchedule(healthRes.data.map(row => toCamelCase<HealthScheduleEntry>(row)));
@@ -145,38 +144,85 @@ export function useSupabaseData() {
         }
     }, [profile?.id]);
 
-    // ============ Food Settings ============
-    const updateFoodSettings = useCallback(async (food: FoodAnalysis) => {
+    // ============ Food Brands Management ============
+    const addFoodBrand = useCallback(async (food: Omit<FoodAnalysis, 'id'>) => {
         if (!profile?.id) return;
-
         try {
-            const dbData = { ...toSnakeCase(food), profile_id: profile.id };
-
-            // Check if exists
-            const { data: existing } = await supabase
+            const dbData = {
+                ...toSnakeCase(food),
+                profile_id: profile.id,
+                // Ensure type is set if missing
+                type: food.type || 'food'
+            };
+            const { data, error } = await supabase
                 .from('food_settings')
-                .select('id')
-                .eq('profile_id', profile.id)
+                .insert(dbData)
+                .select()
                 .single();
-
-            if (existing) {
-                const { error } = await supabase
-                    .from('food_settings')
-                    .update(dbData)
-                    .eq('profile_id', profile.id);
-                if (error) throw error;
-            } else {
-                const { error } = await supabase
-                    .from('food_settings')
-                    .insert(dbData);
-                if (error) throw error;
+            if (error) throw error;
+            if (data) {
+                setFoodBrands(prev => [...prev, toCamelCase<FoodAnalysis>(data)]);
             }
-            setFoodSettings(food);
         } catch (err) {
-            console.error('Error saving food settings:', err);
-            setError(err instanceof Error ? err.message : 'Failed to save food settings');
+            console.error('Error adding food brand:', err);
+            setError(err instanceof Error ? err.message : 'Failed to add food brand');
         }
     }, [profile?.id]);
+
+    const updateFoodBrand = useCallback(async (id: string, updates: Partial<FoodAnalysis>) => {
+        try {
+            const dbUpdates = toSnakeCase(updates);
+            const { error } = await supabase
+                .from('food_settings')
+                .update(dbUpdates)
+                .eq('id', id);
+            if (error) throw error;
+            setFoodBrands(prev => prev.map(f => f.id === id ? { ...f, ...updates } : f));
+        } catch (err) {
+            console.error('Error updating food brand:', err);
+            setError(err instanceof Error ? err.message : 'Failed to update food brand');
+        }
+    }, []);
+
+    const deleteFoodBrand = useCallback(async (id: string) => {
+        try {
+            const { error } = await supabase.from('food_settings').delete().eq('id', id);
+            if (error) throw error;
+            setFoodBrands(prev => prev.filter(f => f.id !== id));
+        } catch (err) {
+            console.error('Error deleting food brand:', err);
+            setError(err instanceof Error ? err.message : 'Failed to delete food brand');
+        }
+    }, []);
+
+    const setDefaultFoodBrand = useCallback(async (id: string) => {
+        if (!profile?.id) return;
+        try {
+            const brand = foodBrands.find(b => b.id === id);
+            if (!brand) return;
+
+            // Unset all others of the same type
+            await supabase
+                .from('food_settings')
+                .update({ is_default: false })
+                .eq('profile_id', profile.id)
+                .eq('type', brand.type);
+
+            // Set new default
+            const { error } = await supabase
+                .from('food_settings')
+                .update({ is_default: true })
+                .eq('id', id);
+
+            if (error) throw error;
+            setFoodBrands(prev => prev.map(f =>
+                f.type === brand.type ? { ...f, isDefault: f.id === id } : f
+            ));
+        } catch (err) {
+            console.error('Error setting default food brand:', err);
+            setError(err instanceof Error ? err.message : 'Failed to set default food brand');
+        }
+    }, [profile?.id, foodBrands]);
 
     // ============ Health Schedule ============
     const generateSchedule = useCallback(async (birthDate: Date) => {
@@ -382,7 +428,7 @@ export function useSupabaseData() {
         const report = {
             exportDate: new Date().toISOString(),
             profile,
-            foodSettings,
+            foodBrands,
             healthSchedule,
             weightLog,
             vitalsLog,
@@ -396,7 +442,7 @@ export function useSupabaseData() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-    }, [profile, foodSettings, healthSchedule, weightLog, vitalsLog]);
+    }, [profile, foodBrands, healthSchedule, weightLog, vitalsLog]);
 
     // ============ Reset ============
     const resetData = useCallback(async () => {
@@ -405,7 +451,7 @@ export function useSupabaseData() {
         try {
             await supabase.from('puppy_profiles').delete().eq('id', profile.id);
             setProfile(null);
-            setFoodSettings(null);
+            setFoodBrands([]);
             setHealthSchedule([]);
             setWeightLog([]);
             setVitalsLog([]);
@@ -422,7 +468,7 @@ export function useSupabaseData() {
 
         // Data
         profile,
-        foodSettings,
+        foodBrands,
         healthSchedule,
         weightLog,
         vitalsLog,
@@ -436,7 +482,10 @@ export function useSupabaseData() {
 
         // Actions
         updateProfile,
-        updateFoodSettings,
+        addFoodBrand,
+        updateFoodBrand,
+        deleteFoodBrand,
+        setDefaultFoodBrand,
         generateSchedule,
         updateHealthEntry,
         addWeightEntry,

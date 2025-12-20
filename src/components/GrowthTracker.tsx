@@ -7,7 +7,9 @@ import {
     Activity,
     Heart,
     Clock,
-    AlertTriangle
+    AlertTriangle,
+    ChevronDown,
+    ChevronUp
 } from 'lucide-react';
 import { format, differenceInWeeks } from 'date-fns';
 import {
@@ -21,16 +23,19 @@ import {
     ComposedChart,
     Legend
 } from 'recharts';
-import type { WeightEntry, VitalsEntry, GumColor } from '../types';
+import type { WeightEntry, VitalsEntry, GumColor, WeightUnit } from '../types';
+import { WeightConverter } from '../types';
 import { getTargetWeight } from '../utils/vetFormulas';
 
 interface GrowthTrackerProps {
     birthDate: string | null;
     weightLog: WeightEntry[];
     vitalsLog: VitalsEntry[];
+    weightUnit: WeightUnit;
     onAddWeight: (entry: Omit<WeightEntry, 'id'>) => void;
     onDeleteWeight: (id: string) => void;
     onAddVitals: (entry: Omit<VitalsEntry, 'id'>) => void;
+    onUnitChange: (unit: WeightUnit) => void;
 }
 
 const fecalScoreColors = [
@@ -55,13 +60,16 @@ export function GrowthTracker({
     birthDate,
     weightLog,
     vitalsLog,
+    weightUnit,
     onAddWeight,
     onDeleteWeight,
     onAddVitals,
+    onUnitChange,
 }: GrowthTrackerProps) {
     const [showWeightForm, setShowWeightForm] = useState(false);
     const [showVitalsForm, setShowVitalsForm] = useState(false);
-    const [weightInput, setWeightInput] = useState({ date: format(new Date(), 'yyyy-MM-dd'), grams: '' });
+    const [showVitalsHistory, setShowVitalsHistory] = useState(false);
+    const [weightInput, setWeightInput] = useState({ date: format(new Date(), 'yyyy-MM-dd'), value: '' });
     const [vitalsInput, setVitalsInput] = useState<{
         date: string;
         fecalScore: number | null;
@@ -90,15 +98,14 @@ export function GrowthTracker({
         };
     }).sort((a, b) => a.week - b.week);
 
-    // Waltham reference data is incorporated into chartData via getTargetWeight
-
     const handleAddWeight = () => {
-        if (weightInput.grams) {
+        if (weightInput.value) {
+            const grams = WeightConverter.toGrams(parseFloat(weightInput.value), weightUnit);
             onAddWeight({
                 date: new Date(weightInput.date).toISOString(),
-                weightGrams: parseInt(weightInput.grams),
+                weightGrams: grams,
             });
-            setWeightInput({ date: format(new Date(), 'yyyy-MM-dd'), grams: '' });
+            setWeightInput({ date: format(new Date(), 'yyyy-MM-dd'), value: '' });
             setShowWeightForm(false);
         }
     };
@@ -124,28 +131,43 @@ export function GrowthTracker({
         : null;
 
     return (
-        <div className="space-y-4 animate-fade-in">
+        <div className="space-y-6 animate-fade-in pb-24">
             {/* Header */}
-            <div className="card">
-                <div className="gradient-header">
-                    <h2 className="text-lg font-bold flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5" />
-                        Growth Tracker
-                    </h2>
-                    <p className="text-sm text-white/80">Waltham & WSAVA Standards</p>
+            <div className="card p-6">
+                <div className="gradient-header flex justify-between items-start">
+                    <div>
+                        <h2 className="text-xl font-bold flex items-center gap-3">
+                            <TrendingUp className="w-6 h-6" />
+                            Growth Tracker
+                        </h2>
+                        <p className="text-sm text-white/90 mt-1">Waltham & WSAVA Standards</p>
+                    </div>
+
+                    {/* Unit Toggle */}
+                    <div className="flex bg-white/10 p-1 rounded-xl backdrop-blur-sm">
+                        {(['g', 'oz', 'lbs'] as WeightUnit[]).map((unit) => (
+                            <button
+                                key={unit}
+                                onClick={() => onUnitChange(unit)}
+                                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${weightUnit === unit
+                                        ? 'bg-white text-cyan-600 shadow-sm'
+                                        : 'text-white hover:bg-white/10'
+                                    }`}
+                            >
+                                {unit}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Current Weight Display */}
                 {latestWeight && (
-                    <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-4 text-white text-center mb-4">
-                        <Scale className="w-6 h-6 mx-auto mb-1" />
-                        <div className="text-2xl font-bold">
-                            {latestWeight.weightGrams >= 1000
-                                ? `${(latestWeight.weightGrams / 1000).toFixed(2)} kg`
-                                : `${latestWeight.weightGrams} g`
-                            }
+                    <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-6 text-white text-center mb-6 shadow-lg">
+                        <Scale className="w-8 h-8 mx-auto mb-2" />
+                        <div className="text-3xl font-bold">
+                            {WeightConverter.format(latestWeight.weightGrams, weightUnit)}
                         </div>
-                        <div className="text-sm opacity-80">
+                        <div className="text-sm opacity-80 mt-1">
                             Last recorded {format(new Date(latestWeight.date), 'MMM d')}
                         </div>
                     </div>
@@ -154,15 +176,15 @@ export function GrowthTracker({
                 {/* Add Weight Button */}
                 {!showWeightForm ? (
                     <button
-                        className="btn btn-primary w-full"
+                        className="btn btn-primary w-full py-4 text-base font-bold shadow-md"
                         onClick={() => setShowWeightForm(true)}
                     >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-5 h-5" />
                         Log Weight
                     </button>
                 ) : (
-                    <div className="bg-slate-50 rounded-xl p-4 space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-[var(--bg-muted)]/50 border border-[var(--border-color)] rounded-2xl p-5 space-y-4 animate-slide-down">
+                        <div className="grid grid-cols-2 gap-4">
                             <div className="input-group mb-0">
                                 <label className="input-label">Date</label>
                                 <input
@@ -173,30 +195,31 @@ export function GrowthTracker({
                                 />
                             </div>
                             <div className="input-group mb-0">
-                                <label className="input-label">Weight (grams)</label>
+                                <label className="input-label">Weight ({WeightConverter.labels[weightUnit]})</label>
                                 <input
                                     type="number"
                                     className="input-field"
-                                    placeholder="e.g., 500"
-                                    value={weightInput.grams}
-                                    onChange={(e) => setWeightInput({ ...weightInput, grams: e.target.value })}
+                                    placeholder={`e.g., ${weightUnit === 'g' ? '500' : weightUnit === 'oz' ? '16' : '1.1'}`}
+                                    value={weightInput.value}
+                                    onChange={(e) => setWeightInput({ ...weightInput, value: e.target.value })}
                                     autoFocus
+                                    step="any"
                                 />
                             </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-3">
                             <button
-                                className="btn btn-outline flex-1"
+                                className="btn btn-outline flex-1 py-3"
                                 onClick={() => setShowWeightForm(false)}
                             >
                                 Cancel
                             </button>
                             <button
-                                className="btn btn-success flex-1"
+                                className="btn btn-success flex-1 py-3"
                                 onClick={handleAddWeight}
-                                disabled={!weightInput.grams}
+                                disabled={!weightInput.value}
                             >
-                                Save
+                                Save Weight
                             </button>
                         </div>
                     </div>
@@ -205,42 +228,48 @@ export function GrowthTracker({
 
             {/* Weight Chart */}
             {weightLog.length > 0 && (
-                <div className="card">
-                    <h3 className="card-header">
+                <div className="card p-6">
+                    <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1 flex items-center gap-2">
                         <Activity className="w-5 h-5 text-cyan-500" />
                         Growth Chart
                     </h3>
-                    <p className="text-xs text-slate-500 mb-3">
+                    <p className="text-xs text-[var(--text-muted)] mb-6">
                         Shaded area shows Waltham Toy Breed target zone
                     </p>
 
                     <div className="chart-container">
                         <ResponsiveContainer>
                             <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                                 <XAxis
                                     dataKey="week"
-                                    tick={{ fontSize: 12 }}
-                                    label={{ value: 'Age (weeks)', position: 'bottom', offset: -5, fontSize: 11 }}
+                                    tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
+                                    label={{ value: 'Age (weeks)', position: 'bottom', offset: -5, fontSize: 11, fill: 'var(--text-muted)' }}
                                 />
                                 <YAxis
-                                    tick={{ fontSize: 12 }}
-                                    label={{ value: 'Weight (g)', angle: -90, position: 'insideLeft', fontSize: 11 }}
+                                    tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
+                                    label={{ value: `Weight (${weightUnit})`, angle: -90, position: 'insideLeft', fontSize: 11, fill: 'var(--text-muted)' }}
+                                    tickFormatter={(value) => WeightConverter.fromGrams(value, weightUnit).toString()}
                                 />
                                 <Tooltip
                                     contentStyle={{
-                                        borderRadius: '8px',
-                                        border: 'none',
-                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                                        borderRadius: '12px',
+                                        border: '1px solid var(--border-color)',
+                                        backgroundColor: 'var(--bg-card)',
+                                        color: 'var(--text-primary)',
+                                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
                                     }}
+                                    itemStyle={{ fontSize: '12px' }}
                                     formatter={(value, name) => {
                                         if (value === undefined) return ['-', name];
-                                        if (name === 'weight') return [`${value}g`, 'Actual Weight'];
-                                        if (name === 'idealTarget') return [`${value}g`, 'Target'];
-                                        return [value, name];
+                                        const converted = WeightConverter.fromGrams(Number(value), weightUnit);
+                                        const label = `${converted}${weightUnit}`;
+                                        if (name === 'weight') return [label, 'Actual Weight'];
+                                        if (name === 'idealTarget') return [label, 'Target'];
+                                        return [label, name];
                                     }}
                                 />
-                                <Legend />
+                                <Legend wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }} />
 
                                 {/* Target Zone */}
                                 <Area
@@ -248,8 +277,8 @@ export function GrowthTracker({
                                     dataKey="maxTarget"
                                     stackId="1"
                                     stroke="none"
-                                    fill="#99f6e4"
-                                    fillOpacity={0.3}
+                                    fill="var(--color-primary)"
+                                    fillOpacity={0.15}
                                     name="Max Target"
                                 />
                                 <Area
@@ -257,7 +286,7 @@ export function GrowthTracker({
                                     dataKey="minTarget"
                                     stackId="2"
                                     stroke="none"
-                                    fill="#ffffff"
+                                    fill="var(--bg-card)"
                                     name="Min Target"
                                 />
 
@@ -265,7 +294,7 @@ export function GrowthTracker({
                                 <Line
                                     type="monotone"
                                     dataKey="idealTarget"
-                                    stroke="#14b8a6"
+                                    stroke="var(--color-success)"
                                     strokeWidth={2}
                                     strokeDasharray="5 5"
                                     dot={false}
@@ -276,9 +305,9 @@ export function GrowthTracker({
                                 <Line
                                     type="monotone"
                                     dataKey="weight"
-                                    stroke="#8b5cf6"
+                                    stroke="var(--color-secondary)"
                                     strokeWidth={3}
-                                    dot={{ fill: '#8b5cf6', strokeWidth: 2 }}
+                                    dot={{ fill: 'var(--color-secondary)', strokeWidth: 2, r: 4 }}
                                     activeDot={{ r: 6 }}
                                     name="Actual"
                                 />
@@ -290,31 +319,35 @@ export function GrowthTracker({
 
             {/* Weight History */}
             {weightLog.length > 0 && (
-                <div className="card">
-                    <h3 className="card-header">
+                <div className="card p-6">
+                    <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                         <Scale className="w-5 h-5 text-violet-500" />
                         Weight History
                     </h3>
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                    <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
                         {[...weightLog]
                             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                             .map((entry) => (
-                                <div key={entry.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                                <div key={entry.id} className="flex items-center justify-between p-4 bg-[var(--bg-muted)]/30 border border-[var(--border-color)] rounded-2xl transition-colors hover:bg-[var(--bg-muted)]/50">
                                     <div>
-                                        <span className="font-medium text-sm">{entry.weightGrams}g</span>
-                                        <span className="text-slate-500 text-xs ml-2">
-                                            ({(entry.weightGrams / 1000).toFixed(2)}kg)
+                                        <span className="font-bold text-base text-[var(--text-primary)]">
+                                            {WeightConverter.format(entry.weightGrams, weightUnit)}
                                         </span>
+                                        {weightUnit !== 'g' && (
+                                            <span className="text-[var(--text-muted)] text-xs ml-2 font-medium">
+                                                ({entry.weightGrams}g)
+                                            </span>
+                                        )}
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs text-slate-500">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-xs text-[var(--text-muted)] font-medium">
                                             {format(new Date(entry.date), 'MMM d, yyyy')}
                                         </span>
                                         <button
-                                            className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
+                                            className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
                                             onClick={() => onDeleteWeight(entry.id)}
                                         >
-                                            <Trash2 className="w-3 h-3" />
+                                            <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
                                 </div>
@@ -324,22 +357,22 @@ export function GrowthTracker({
             )}
 
             {/* Vitals Section */}
-            <div className="card">
-                <h3 className="card-header">
+            <div className="card p-6">
+                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                     <Heart className="w-5 h-5 text-pink-500" />
                     Vitals Log
                 </h3>
 
                 {!showVitalsForm ? (
                     <button
-                        className="btn btn-secondary w-full"
+                        className="btn btn-secondary w-full py-4 text-base font-bold shadow-md"
                         onClick={() => setShowVitalsForm(true)}
                     >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-5 h-5" />
                         Log Vitals Check
                     </button>
                 ) : (
-                    <div className="bg-slate-50 rounded-xl p-4 space-y-4">
+                    <div className="bg-[var(--bg-muted)]/50 border border-[var(--border-color)] rounded-2xl p-5 space-y-5 animate-slide-down">
                         {/* Date */}
                         <div className="input-group mb-0">
                             <label className="input-label">Date</label>
@@ -353,12 +386,12 @@ export function GrowthTracker({
 
                         {/* Fecal Score */}
                         <div>
-                            <label className="input-label mb-2">Fecal Score (Purina 1-7 Scale)</label>
-                            <div className="fecal-scale">
+                            <label className="input-label mb-3">Fecal Score (Purina 1-7 Scale)</label>
+                            <div className="fecal-scale justify-between">
                                 {[1, 2, 3, 4, 5, 6, 7].map((score) => (
                                     <button
                                         key={score}
-                                        className={`fecal-dot ${vitalsInput.fecalScore === score ? 'selected' : ''}`}
+                                        className={`fecal-dot w-9 h-9 text-sm ${vitalsInput.fecalScore === score ? 'selected ring-2 ring-offset-2 ring-cyan-500' : ''}`}
                                         style={{
                                             backgroundColor: fecalScoreColors[score - 1],
                                             color: 'white'
@@ -370,7 +403,7 @@ export function GrowthTracker({
                                     </button>
                                 ))}
                             </div>
-                            <p className="text-xs text-slate-500 mt-1">
+                            <p className="text-xs text-[var(--text-muted)] mt-2 font-medium">
                                 {vitalsInput.fecalScore === 4 ? '✓ Ideal consistency' :
                                     vitalsInput.fecalScore && vitalsInput.fecalScore < 4 ? 'Too firm' :
                                         vitalsInput.fecalScore && vitalsInput.fecalScore > 4 ? 'Too soft' :
@@ -380,12 +413,12 @@ export function GrowthTracker({
 
                         {/* Gum Color */}
                         <div>
-                            <label className="input-label mb-2">Gum Color</label>
-                            <div className="gum-options">
+                            <label className="input-label mb-3">Gum Color</label>
+                            <div className="gum-options gap-2">
                                 {gumColorOptions.map((option) => (
                                     <button
                                         key={option.value}
-                                        className={`gum-option ${option.value} ${vitalsInput.gumColor === option.value ? 'selected' : ''}`}
+                                        className={`gum-option ${option.value} py-2 px-3 text-xs font-bold ${vitalsInput.gumColor === option.value ? 'selected ring-2 ring-offset-2 ring-cyan-500' : ''}`}
                                         onClick={() => setVitalsInput({ ...vitalsInput, gumColor: option.value })}
                                         type="button"
                                     >
@@ -394,9 +427,9 @@ export function GrowthTracker({
                                 ))}
                             </div>
                             {vitalsInput.gumColor === 'blue' && (
-                                <div className="alert alert-danger mt-2">
-                                    <AlertTriangle className="w-4 h-4" />
-                                    <span className="text-sm">Blue gums indicate oxygen deprivation. Seek emergency care immediately!</span>
+                                <div className="alert alert-danger mt-3">
+                                    <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                                    <span className="text-sm font-bold">Blue gums indicate oxygen deprivation. Seek emergency care immediately!</span>
                                 </div>
                             )}
                         </div>
@@ -418,20 +451,20 @@ export function GrowthTracker({
                                 />
                                 <span className="input-unit">sec</span>
                             </div>
-                            <p className="text-xs text-slate-500 mt-1">
+                            <p className="text-xs text-[var(--text-muted)] mt-2 font-medium">
                                 Normal: &lt; 2 seconds. Press gum, time until pink returns.
                             </p>
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-3 pt-2">
                             <button
-                                className="btn btn-outline flex-1"
+                                className="btn btn-outline flex-1 py-3"
                                 onClick={() => setShowVitalsForm(false)}
                             >
                                 Cancel
                             </button>
                             <button
-                                className="btn btn-success flex-1"
+                                className="btn btn-success flex-1 py-3 font-bold"
                                 onClick={handleAddVitals}
                             >
                                 Save Vitals
@@ -440,36 +473,49 @@ export function GrowthTracker({
                     </div>
                 )}
 
-                {/* Vitals History */}
+                {/* Vitals History Toggle */}
                 {vitalsLog.length > 0 && (
-                    <div className="mt-4 space-y-2">
-                        {vitalsLog.slice(0, 5).map((entry) => (
-                            <div key={entry.id} className="p-3 bg-slate-50 rounded-lg text-sm">
-                                <div className="flex items-center justify-between mb-1">
-                                    <span className="font-medium">{format(new Date(entry.date), 'MMM d, yyyy')}</span>
-                                </div>
-                                <div className="flex flex-wrap gap-2 text-xs">
-                                    {entry.fecalScore && (
-                                        <span
-                                            className="px-2 py-1 rounded-full text-white"
-                                            style={{ backgroundColor: fecalScoreColors[entry.fecalScore - 1] }}
-                                        >
-                                            Fecal: {entry.fecalScore}
-                                        </span>
-                                    )}
-                                    {entry.gumColor && (
-                                        <span className={`gum-option ${entry.gumColor} px-2 py-1`}>
-                                            Gums: {entry.gumColor}
-                                        </span>
-                                    )}
-                                    {entry.crtSeconds && (
-                                        <span className="px-2 py-1 rounded-full bg-slate-200">
-                                            CRT: {entry.crtSeconds}s
-                                        </span>
-                                    )}
-                                </div>
+                    <div className="mt-6">
+                        <button
+                            onClick={() => setShowVitalsHistory(!showVitalsHistory)}
+                            className="text-sm font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center gap-2 transition-colors"
+                        >
+                            <Clock className="w-4 h-4" />
+                            {showVitalsHistory ? 'Hide' : 'Show'} Vitals History ({vitalsLog.length})
+                            {showVitalsHistory ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        </button>
+
+                        {showVitalsHistory && (
+                            <div className="mt-4 space-y-3 animate-slide-down">
+                                {vitalsLog.map((entry) => (
+                                    <div key={entry.id} className="p-4 bg-[var(--bg-muted)]/30 border border-[var(--border-color)] rounded-2xl transition-colors hover:bg-[var(--bg-muted)]/50">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <span className="font-bold text-[var(--text-primary)]">{format(new Date(entry.date), 'MMM d, yyyy')}</span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {entry.fecalScore && (
+                                                <span
+                                                    className="px-3 py-1.5 rounded-xl text-white text-[10px] font-bold shadow-sm"
+                                                    style={{ backgroundColor: fecalScoreColors[entry.fecalScore - 1] }}
+                                                >
+                                                    Fecal: {entry.fecalScore}
+                                                </span>
+                                            )}
+                                            {entry.gumColor && (
+                                                <span className={`gum-option ${entry.gumColor} px-3 py-1.5 text-[10px] font-bold shadow-sm`}>
+                                                    Gums: {entry.gumColor}
+                                                </span>
+                                            )}
+                                            {entry.crtSeconds && (
+                                                <span className="px-3 py-1.5 rounded-xl bg-[var(--bg-muted)] border border-[var(--border-color)] text-[var(--text-primary)] text-[10px] font-bold shadow-sm">
+                                                    CRT: {entry.crtSeconds}s
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        )}
                     </div>
                 )}
             </div>

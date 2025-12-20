@@ -37,7 +37,7 @@ function App() {
     loading,
     error,
     profile,
-    foodSettings,
+    foodBrands,
     healthSchedule,
     weightLog,
     vitalsLog,
@@ -45,7 +45,10 @@ function App() {
     ageInWeeks,
     upcomingAlerts,
     updateProfile,
-    updateFoodSettings,
+    addFoodBrand,
+    updateFoodBrand,
+    deleteFoodBrand,
+    setDefaultFoodBrand,
     generateSchedule,
     updateHealthEntry,
     addWeightEntry,
@@ -97,8 +100,10 @@ function App() {
             currentWeight={currentWeight}
             ageInWeeks={ageInWeeks}
             upcomingAlerts={upcomingAlerts}
+            weightUnit={weightUnit}
             onExport={exportVetReport}
             onSetupProfile={() => setShowProfileModal(true)}
+            onUnitChange={setWeightUnit}
           />
         );
 
@@ -107,10 +112,13 @@ function App() {
           <NutritionEngine
             currentWeight={currentWeight}
             ageInWeeks={ageInWeeks}
-            foodSettings={foodSettings}
+            foodBrands={foodBrands}
             weightUnit={weightUnit}
             todayFeedings={todayFeedings}
-            onUpdateFood={updateFoodSettings}
+            onAddFood={addFoodBrand}
+            onUpdateFood={updateFoodBrand}
+            onDeleteFood={deleteFoodBrand}
+            onSetDefaultFood={setDefaultFoodBrand}
             onLogFeeding={addFeedingEntry}
             onDeleteFeeding={deleteFeedingEntry}
             onUnitChange={setWeightUnit}
@@ -133,9 +141,11 @@ function App() {
             birthDate={profile?.birthDate || null}
             weightLog={weightLog}
             vitalsLog={vitalsLog}
+            weightUnit={weightUnit}
             onAddWeight={addWeightEntry}
             onDeleteWeight={deleteWeightEntry}
             onAddVitals={addVitalsEntry}
+            onUnitChange={setWeightUnit}
           />
         );
 

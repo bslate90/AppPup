@@ -1,4 +1,3 @@
-
 import {
     PawPrint,
     Calendar,
@@ -9,7 +8,8 @@ import {
     Bell
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
-import type { PuppyProfile, HealthScheduleEntry } from '../types';
+import type { PuppyProfile, HealthScheduleEntry, WeightUnit } from '../types';
+import { WeightConverter } from '../types';
 import { getAlertStatus } from '../utils/vetFormulas';
 
 interface DashboardProps {
@@ -17,8 +17,10 @@ interface DashboardProps {
     currentWeight: number | null;
     ageInWeeks: number | null;
     upcomingAlerts: HealthScheduleEntry[];
+    weightUnit: WeightUnit;
     onExport: () => void;
     onSetupProfile: () => void;
+    onUnitChange: (unit: WeightUnit) => void;
 }
 
 export function Dashboard({
@@ -26,8 +28,10 @@ export function Dashboard({
     currentWeight,
     ageInWeeks,
     upcomingAlerts,
+    weightUnit,
     onExport,
     onSetupProfile,
+    onUnitChange,
 }: DashboardProps) {
     // If no profile, show setup prompt
     if (!profile) {
@@ -64,22 +68,38 @@ export function Dashboard({
         : 'Age unknown';
 
     const weightDisplay = currentWeight
-        ? currentWeight >= 1000
-            ? `${(currentWeight / 1000).toFixed(2)} kg`
-            : `${currentWeight} g`
+        ? WeightConverter.format(currentWeight, weightUnit)
         : 'Not recorded';
 
     return (
         <div className="space-y-4 animate-fade-in">
             {/* Puppy Profile Card */}
             <div className="card">
-                <div className="gradient-header flex items-center gap-3">
-                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                        <PawPrint className="w-6 h-6" />
+                <div className="gradient-header flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                            <PawPrint className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold">{profile.name}</h2>
+                            <p className="text-sm text-white/80">{profile.breed || 'Chihuahua'}</p>
+                        </div>
                     </div>
-                    <div>
-                        <h2 className="text-xl font-bold">{profile.name}</h2>
-                        <p className="text-sm text-white/80">{profile.breed || 'Chihuahua'}</p>
+
+                    {/* Unit Toggle */}
+                    <div className="flex bg-white/10 p-1 rounded-xl backdrop-blur-sm">
+                        {(['g', 'oz', 'lbs'] as WeightUnit[]).map((unit) => (
+                            <button
+                                key={unit}
+                                onClick={() => onUnitChange(unit)}
+                                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${weightUnit === unit
+                                        ? 'bg-white text-cyan-600 shadow-sm'
+                                        : 'text-white hover:bg-white/10'
+                                    }`}
+                            >
+                                {unit}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
