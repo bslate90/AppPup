@@ -17,7 +17,7 @@ function App() {
 
   // Dark mode state with localStorage persistence
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem('apppup-dark-mode');
+    const saved = localStorage.getItem('puppilot-dark-mode');
     if (saved !== null) {
       return JSON.parse(saved);
     }
@@ -28,7 +28,7 @@ function App() {
   // Apply dark mode class to document
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
-    localStorage.setItem('apppup-dark-mode', JSON.stringify(isDarkMode));
+    localStorage.setItem('puppilot-dark-mode', JSON.stringify(isDarkMode));
   }, [isDarkMode]);
 
   const toggleDarkMode = () => setIsDarkMode((prev: boolean) => !prev);

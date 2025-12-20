@@ -1,7 +1,7 @@
 {
-    "name": "AppPup - Puppy Health & Nutrition",
-    "short_name": "AppPup",
-    "description": "Health & Nutrition Command Center for your puppy",
+    "name": "PupPilot - Puppy Health & Nutrition",
+    "short_name": "PupPilot",
+    "description": "Navigate Your Puppy's Growth with Ease",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#0f172a",

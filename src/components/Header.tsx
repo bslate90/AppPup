@@ -14,17 +14,17 @@ export function Header({ puppyName, isDarkMode, onToggleDarkMode }: HeaderProps)
                     <div className="bg-white/20 p-1 rounded-xl backdrop-blur-sm overflow-hidden">
                         <img
                             src="/dr-pup-logo.jpg"
-                            alt="AppPup Logo"
+                            alt="PupPilot Logo"
                             className="w-10 h-10 rounded-lg object-cover"
                         />
                     </div>
                     <div>
                         <h1 className="text-lg font-bold flex items-center gap-2">
-                            AppPup
+                            PupPilot
                             <Sparkles className="w-4 h-4 text-amber-300" />
                         </h1>
                         <p className="text-xs text-white/80">
-                            Health & Nutrition Command Center
+                            Navigate Your Puppy's Growth with Ease
                         </p>
                     </div>
                 </div>
