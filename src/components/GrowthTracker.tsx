@@ -25,10 +25,11 @@ import {
 } from 'recharts';
 import type { WeightEntry, VitalsEntry, GumColor, WeightUnit } from '../types';
 import { WeightConverter } from '../types';
-import { getTargetWeight } from '../utils/vetFormulas';
+import { getBreedTargetWeight, getBreedSizeInfo } from '../utils/breedData';
 
 interface GrowthTrackerProps {
     birthDate: string | null;
+    breed: string;
     weightLog: WeightEntry[];
     vitalsLog: VitalsEntry[];
     weightUnit: WeightUnit;
@@ -58,6 +59,7 @@ const gumColorOptions: { value: GumColor; label: string; emoji: string }[] = [
 
 export function GrowthTracker({
     birthDate,
+    breed,
     weightLog,
     vitalsLog,
     weightUnit,
@@ -66,6 +68,7 @@ export function GrowthTracker({
     onAddVitals,
     onUnitChange,
 }: GrowthTrackerProps) {
+    const breedSizeInfo = getBreedSizeInfo(breed);
     const [showWeightForm, setShowWeightForm] = useState(false);
     const [showVitalsForm, setShowVitalsForm] = useState(false);
     const [showVitalsHistory, setShowVitalsHistory] = useState(false);
@@ -86,7 +89,7 @@ export function GrowthTracker({
     const chartData = weightLog.map((entry) => {
         const entryDate = new Date(entry.date);
         const weeks = birthDate ? differenceInWeeks(entryDate, new Date(birthDate)) : 0;
-        const target = getTargetWeight(weeks);
+        const target = getBreedTargetWeight(breed, weeks);
 
         return {
             week: weeks,
@@ -150,8 +153,8 @@ export function GrowthTracker({
                                 key={unit}
                                 onClick={() => onUnitChange(unit)}
                                 className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${weightUnit === unit
-                                        ? 'bg-white text-cyan-600 shadow-sm'
-                                        : 'text-white hover:bg-white/10'
+                                    ? 'bg-white text-cyan-600 shadow-sm'
+                                    : 'text-white hover:bg-white/10'
                                     }`}
                             >
                                 {unit}
@@ -232,9 +235,12 @@ export function GrowthTracker({
                     <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1 flex items-center gap-2">
                         <Activity className="w-5 h-5 text-cyan-500" />
                         Growth Chart
+                        <span className="ml-auto text-xs px-2 py-1 bg-cyan-100 text-cyan-700 rounded-full font-medium">
+                            {breedSizeInfo.label}
+                        </span>
                     </h3>
                     <p className="text-xs text-[var(--text-muted)] mb-6">
-                        Shaded area shows Waltham Toy Breed target zone
+                        Shaded area shows WALTHAM {breedSizeInfo.label} target zone • Expected adult: {WeightConverter.format(breedSizeInfo.adultWeightIdeal, weightUnit)}
                     </p>
 
                     <div className="chart-container">

@@ -11,6 +11,7 @@ import { format, differenceInDays } from 'date-fns';
 import type { PuppyProfile, HealthScheduleEntry, WeightUnit } from '../types';
 import { WeightConverter } from '../types';
 import { getAlertStatus } from '../utils/vetFormulas';
+import { getBreedSizeInfo } from '../utils/breedData';
 
 interface DashboardProps {
     profile: PuppyProfile | null;
@@ -71,6 +72,8 @@ export function Dashboard({
         ? WeightConverter.format(currentWeight, weightUnit)
         : 'Not recorded';
 
+    const breedSizeInfo = getBreedSizeInfo(profile.breed || 'Chihuahua');
+
     return (
         <div className="space-y-4 animate-fade-in">
             {/* Puppy Profile Card */}
@@ -93,8 +96,8 @@ export function Dashboard({
                                 key={unit}
                                 onClick={() => onUnitChange(unit)}
                                 className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${weightUnit === unit
-                                        ? 'bg-white text-cyan-600 shadow-sm'
-                                        : 'text-white hover:bg-white/10'
+                                    ? 'bg-white text-cyan-600 shadow-sm'
+                                    : 'text-white hover:bg-white/10'
                                     }`}
                             >
                                 {unit}
@@ -114,6 +117,28 @@ export function Dashboard({
                         <Scale className="w-5 h-5 mx-auto mb-1 opacity-80" />
                         <div className="stat-value text-lg">{weightDisplay}</div>
                         <div className="stat-label">Weight</div>
+                    </div>
+                </div>
+
+                {/* Breed Size Info */}
+                <div className="mt-3 p-3 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <span className="text-lg">🐕</span>
+                            <div>
+                                <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300">
+                                    {breedSizeInfo.label}
+                                </span>
+                                <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                                    Expected adult: {WeightConverter.format(breedSizeInfo.adultWeightIdeal, weightUnit)}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                                Range: {WeightConverter.format(breedSizeInfo.adultWeightMin, weightUnit)} - {WeightConverter.format(breedSizeInfo.adultWeightMax, weightUnit)}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>

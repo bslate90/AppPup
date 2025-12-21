@@ -139,6 +139,7 @@ function App() {
         return (
           <GrowthTracker
             birthDate={profile?.birthDate || null}
+            breed={profile?.breed || 'Chihuahua'}
             weightLog={weightLog}
             vitalsLog={vitalsLog}
             weightUnit={weightUnit}
