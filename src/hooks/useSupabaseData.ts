@@ -147,7 +147,10 @@ export function useSupabaseData() {
 
     // ============ Food Brands Management ============
     const addFoodBrand = useCallback(async (food: Omit<FoodAnalysis, 'id'>) => {
-        if (!profile?.id) return;
+        if (!profile?.id) {
+            console.error('Cannot add food brand: No profile ID');
+            return;
+        }
         try {
             const dbData = {
                 ...toSnakeCase(food),
@@ -155,12 +158,18 @@ export function useSupabaseData() {
                 // Ensure type is set if missing
                 type: food.type || 'food'
             };
+            console.log('Inserting food brand with data:', dbData);
+
             const { data, error } = await supabase
                 .from('food_settings')
                 .insert(dbData)
                 .select()
                 .single();
-            if (error) throw error;
+
+            if (error) {
+                console.error('Supabase food insert error:', error);
+                throw new Error(error.message || error.details || 'Failed to insert food brand');
+            }
             if (data) {
                 setFoodBrands(prev => [...prev, toCamelCase<FoodAnalysis>(data)]);
             }
