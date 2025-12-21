@@ -420,6 +420,115 @@ export function NutritionEngine({
                     </div>
                 </div>
             )}
+
+            {/* Scientific Formula Card */}
+            {result && currentWeight && ageInWeeks !== null && (
+                <div className="card overflow-hidden">
+                    <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-4">
+                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                            <span className="text-xl">🔬</span>
+                            Nutrition Science
+                        </h3>
+                        <p className="text-slate-400 text-xs mt-1">Peer-Reviewed Veterinary Formulas</p>
+                    </div>
+
+                    <div className="p-4 bg-slate-50 space-y-4">
+                        {/* RER Formula */}
+                        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">1</div>
+                                <h4 className="font-bold text-slate-800">Resting Energy Requirement (RER)</h4>
+                            </div>
+                            <div className="font-mono text-sm bg-slate-900 text-green-400 p-3 rounded-lg overflow-x-auto">
+                                <span className="text-slate-500">RER = </span>
+                                70 × ({(currentWeight / 1000).toFixed(2)} kg)<sup className="text-xs">0.75</sup>
+                                <span className="text-slate-500"> = </span>
+                                <span className="text-cyan-400 font-bold">{result.rer} kcal</span>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-2">Baseline calories needed at rest</p>
+                        </div>
+
+                        {/* DER Formula */}
+                        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm">2</div>
+                                <h4 className="font-bold text-slate-800">Daily Energy Requirement (DER)</h4>
+                            </div>
+                            <div className="font-mono text-sm bg-slate-900 text-green-400 p-3 rounded-lg overflow-x-auto">
+                                <span className="text-slate-500">DER = </span>
+                                {result.rer} × {(result.der / result.rer).toFixed(1)}
+                                <span className="text-yellow-400 text-xs ml-1">(age multiplier)</span>
+                                <span className="text-slate-500"> = </span>
+                                <span className="text-cyan-400 font-bold">{result.der} kcal</span>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-2">
+                                {ageInWeeks < 16 ? '🐕 Growing puppy needs 2-3× adult energy' :
+                                    ageInWeeks < 26 ? '🐕 Adolescent puppy needs 1.5-2× adult energy' :
+                                        '🐕 Adult maintenance energy'}
+                            </p>
+                        </div>
+
+                        {/* Caloric Density Formula */}
+                        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-sm">3</div>
+                                <h4 className="font-bold text-slate-800">Food Energy Density</h4>
+                            </div>
+                            <div className="font-mono text-sm bg-slate-900 text-green-400 p-3 rounded-lg overflow-x-auto">
+                                <span className="text-slate-500">ME = </span>
+                                10 × [(3.5 × P) + (8.5 × F) + (3.5 × NFE)]
+                                <span className="text-slate-500"> = </span>
+                                <span className="text-cyan-400 font-bold">{result.kcalPerKg} kcal/kg</span>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-2">Modified Atwater factors for pet food</p>
+                        </div>
+
+                        {/* Daily Food Amount */}
+                        <div className="bg-white rounded-xl p-4 border-2 border-cyan-500 shadow-md">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="w-8 h-8 rounded-full bg-cyan-500 text-white flex items-center justify-center font-bold text-sm">4</div>
+                                <h4 className="font-bold text-slate-800">Daily Food Amount</h4>
+                            </div>
+                            <div className="font-mono text-sm bg-slate-900 text-green-400 p-3 rounded-lg overflow-x-auto">
+                                <span className="text-slate-500">Food = </span>
+                                ({result.der} ÷ {result.kcalPerKg}) × 1000
+                                <span className="text-slate-500"> = </span>
+                                <span className="text-cyan-400 font-bold text-lg">{result.dailyGrams}g/day</span>
+                            </div>
+                            <div className="mt-3 flex items-center justify-between bg-cyan-50 rounded-lg p-2">
+                                <span className="text-sm font-medium text-cyan-800">
+                                    ÷ {result.mealsPerDay} meals
+                                </span>
+                                <span className="text-lg font-bold text-cyan-600">
+                                    = {result.gramsPerMeal}g per meal
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Age-Based Multiplier Reference */}
+                        <div className="bg-white rounded-xl p-4 border border-slate-200">
+                            <h4 className="font-bold text-slate-700 text-sm mb-3 flex items-center gap-2">
+                                📊 DER Multipliers by Age
+                            </h4>
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div className={`p-2 rounded-lg ${ageInWeeks < 16 ? 'bg-cyan-100 border-2 border-cyan-400' : 'bg-slate-100'}`}>
+                                    <span className="font-bold">0-16 wks:</span> 3.0×
+                                </div>
+                                <div className={`p-2 rounded-lg ${ageInWeeks >= 16 && ageInWeeks < 26 ? 'bg-cyan-100 border-2 border-cyan-400' : 'bg-slate-100'}`}>
+                                    <span className="font-bold">4-6 mo:</span> 2.0×
+                                </div>
+                                <div className={`p-2 rounded-lg ${ageInWeeks >= 26 && ageInWeeks < 52 ? 'bg-cyan-100 border-2 border-cyan-400' : 'bg-slate-100'}`}>
+                                    <span className="font-bold">6-12 mo:</span> 1.6×
+                                </div>
+                                <div className={`p-2 rounded-lg ${ageInWeeks >= 52 ? 'bg-cyan-100 border-2 border-cyan-400' : 'bg-slate-100'}`}>
+                                    <span className="font-bold">Adult:</span> 1.0×
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }
