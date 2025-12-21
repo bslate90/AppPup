@@ -9,6 +9,7 @@ import type {
     FeedingEntry
 } from '../types';
 import { generateFullHealthSchedule, getAlertStatus } from '../utils/vetFormulas';
+import { generateVetReportPDF } from '../utils/pdfGenerator';
 
 // Helper to convert snake_case DB rows to camelCase TypeScript objects
 function toCamelCase<T>(obj: Record<string, unknown>): T {
@@ -425,24 +426,8 @@ export function useSupabaseData() {
 
     // ============ Export ============
     const exportVetReport = useCallback(() => {
-        const report = {
-            exportDate: new Date().toISOString(),
-            profile,
-            foodBrands,
-            healthSchedule,
-            weightLog,
-            vitalsLog,
-        };
-        const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${profile?.name || 'puppy'}_vet_report_${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }, [profile, foodBrands, healthSchedule, weightLog, vitalsLog]);
+        generateVetReportPDF(profile, healthSchedule, weightLog, vitalsLog);
+    }, [profile, healthSchedule, weightLog, vitalsLog]);
 
     // ============ Reset ============
     const resetData = useCallback(async () => {
