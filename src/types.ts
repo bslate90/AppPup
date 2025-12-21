@@ -49,7 +49,22 @@ export interface NutritionResult {
 /**
  * Vaccine types supported by the app
  */
-export type VaccineType = 'DAPP' | 'Lepto' | 'Bordetella' | 'Deworming' | 'Rabies';
+export type VaccineType = 'DAPP' | 'Lepto' | 'Bordetella' | 'Deworming' | 'Rabies' | 'DAPP_5' | 'DAPP_6' | 'DAPP_8' | 'DAPP_9';
+
+/**
+ * Disease components for combination vaccines
+ */
+export const VACCINE_COMPOSITION: Record<string, string[]> = {
+    'DAPP': ['Distemper', 'Adenovirus', 'Parvovirus', 'Parainfluenza'],
+    'DAPP_5': ['Distemper', 'Adenovirus', 'Parvovirus', 'Parainfluenza', 'Hepatitis'],
+    'DAPP_6': ['Distemper', 'Adenovirus', 'Parvovirus', 'Parainfluenza', 'Hepatitis', 'Coronavirus'],
+    'DAPP_8': ['Distemper', 'Adenovirus', 'Parvovirus', 'Parainfluenza', 'Hepatitis', 'Coronavirus', 'Lepto (2 strains)'],
+    'DAPP_9': ['Distemper', 'Adenovirus', 'Parvovirus', 'Parainfluenza', 'Hepatitis', 'Coronavirus', 'Lepto (4 strains)'],
+    'Lepto': ['Leptospirosis'],
+    'Bordetella': ['Bordetella (Kennel Cough)'],
+    'Rabies': ['Rabies'],
+    'Deworming': ['Intestinal Parasites']
+};
 
 /**
  * Alert status for health items
