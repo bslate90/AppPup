@@ -9,7 +9,8 @@ import {
     Clock,
     AlertTriangle,
     ChevronDown,
-    ChevronUp
+    ChevronUp,
+    Calculator
 } from 'lucide-react';
 import { format, differenceInWeeks } from 'date-fns';
 import {
@@ -72,6 +73,7 @@ export function GrowthTracker({
     const [showWeightForm, setShowWeightForm] = useState(false);
     const [showVitalsForm, setShowVitalsForm] = useState(false);
     const [showVitalsHistory, setShowVitalsHistory] = useState(false);
+    const [showWeightCalc, setShowWeightCalc] = useState(false);
     const [weightInput, setWeightInput] = useState({ date: format(new Date(), 'yyyy-MM-dd'), value: '' });
     const [vitalsInput, setVitalsInput] = useState<{
         date: string;
@@ -319,6 +321,165 @@ export function GrowthTracker({
                                 />
                             </ComposedChart>
                         </ResponsiveContainer>
+                    </div>
+
+                    {/* Expected Adult Weight Calculation Breakdown */}
+                    <div className="mt-6 pt-6 border-t border-[var(--border-color)]">
+                        <button
+                            onClick={() => setShowWeightCalc(!showWeightCalc)}
+                            className="text-sm font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center gap-2 transition-colors w-full"
+                        >
+                            <Calculator className="w-4 h-4" />
+                            Expected Adult Weight Calculation
+                            {showWeightCalc ? <ChevronUp className="w-4 h-4 ml-auto" /> : <ChevronDown className="w-4 h-4 ml-auto" />}
+                        </button>
+
+                        {showWeightCalc && (() => {
+                            // Calculate current age in weeks
+                            const currentAgeWeeks = birthDate
+                                ? differenceInWeeks(new Date(), new Date(birthDate))
+                                : 0;
+
+                            // Get the latest weight
+                            const currentWeight = latestWeight?.weightGrams || 0;
+
+                            // Get target weight for current age
+                            const currentTarget = getBreedTargetWeight(breed, currentAgeWeeks);
+
+                            // Calculate growth ratio (actual vs ideal at current age)
+                            const growthRatio = currentTarget && currentTarget.ideal > 0
+                                ? currentWeight / currentTarget.ideal
+                                : 1;
+
+                            // Project adult weight based on ratio
+                            const projectedAdultWeight = Math.round(breedSizeInfo.adultWeightIdeal * growthRatio);
+
+                            // Percentage of maturity reached
+                            const maturityPercent = currentTarget && breedSizeInfo.adultWeightIdeal > 0
+                                ? Math.round((currentTarget.ideal / breedSizeInfo.adultWeightIdeal) * 100)
+                                : 0;
+
+                            // Current vs target percentage
+                            const targetPercent = currentTarget && currentTarget.ideal > 0
+                                ? Math.round((currentWeight / currentTarget.ideal) * 100)
+                                : 100;
+
+                            return (
+                                <div className="mt-4 space-y-4 animate-slide-down">
+                                    {/* Breed Classification */}
+                                    <div className="bg-[var(--bg-muted)]/30 border border-[var(--border-color)] rounded-xl p-4">
+                                        <h4 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-3">
+                                            1. Breed Classification
+                                        </h4>
+                                        <div className="space-y-2 text-sm">
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--text-muted)]">Breed Entered:</span>
+                                                <span className="font-medium text-[var(--text-primary)]">{breed || 'Not specified'}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--text-muted)]">Size Category:</span>
+                                                <span className="font-medium text-cyan-600">{breedSizeInfo.label}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--text-muted)]">Maturity Timeline:</span>
+                                                <span className="font-medium text-[var(--text-primary)]">{breedSizeInfo.maturityWeeks} weeks</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Category Standard Weights */}
+                                    <div className="bg-[var(--bg-muted)]/30 border border-[var(--border-color)] rounded-xl p-4">
+                                        <h4 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-3">
+                                            2. Category Standard Weights (WALTHAM)
+                                        </h4>
+                                        <div className="space-y-2 text-sm">
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--text-muted)]">Min Adult Weight:</span>
+                                                <span className="font-medium text-[var(--text-primary)]">{WeightConverter.format(breedSizeInfo.adultWeightMin, weightUnit)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--text-muted)]">Ideal Adult Weight:</span>
+                                                <span className="font-bold text-emerald-600">{WeightConverter.format(breedSizeInfo.adultWeightIdeal, weightUnit)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-[var(--text-muted)]">Max Adult Weight:</span>
+                                                <span className="font-medium text-[var(--text-primary)]">{WeightConverter.format(breedSizeInfo.adultWeightMax, weightUnit)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Current Growth Analysis */}
+                                    {currentWeight > 0 && currentTarget && birthDate && (
+                                        <div className="bg-[var(--bg-muted)]/30 border border-[var(--border-color)] rounded-xl p-4">
+                                            <h4 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-3">
+                                                3. Your Puppy's Growth Analysis
+                                            </h4>
+                                            <div className="space-y-2 text-sm">
+                                                <div className="flex justify-between">
+                                                    <span className="text-[var(--text-muted)]">Current Age:</span>
+                                                    <span className="font-medium text-[var(--text-primary)]">{currentAgeWeeks} weeks</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-[var(--text-muted)]">Current Weight:</span>
+                                                    <span className="font-medium text-[var(--text-primary)]">{WeightConverter.format(currentWeight, weightUnit)}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-[var(--text-muted)]">Target at {currentAgeWeeks} wks:</span>
+                                                    <span className="font-medium text-[var(--text-primary)]">{WeightConverter.format(currentTarget.ideal, weightUnit)}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-[var(--text-muted)]">vs Target:</span>
+                                                    <span className={`font-bold ${targetPercent >= 90 && targetPercent <= 110 ? 'text-emerald-600' : targetPercent < 90 ? 'text-amber-600' : 'text-blue-600'}`}>
+                                                        {targetPercent}% of target
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-[var(--text-muted)]">Maturity Progress:</span>
+                                                    <span className="font-medium text-[var(--text-primary)]">{maturityPercent}% of growth curve</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Projected Adult Weight */}
+                                    {currentWeight > 0 && birthDate && (
+                                        <div className="bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-300 dark:border-violet-700 rounded-xl p-4">
+                                            <h4 className="text-xs font-bold text-violet-700 dark:text-violet-300 uppercase tracking-wider mb-3">
+                                                4. Projected Adult Weight
+                                            </h4>
+                                            <div className="space-y-3 text-sm">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-[var(--text-muted)]">Formula:</span>
+                                                    <span className="font-mono text-xs bg-[var(--bg-muted)] px-2 py-1 rounded">
+                                                        Ideal × Growth Ratio
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-[var(--text-muted)]">Calculation:</span>
+                                                    <span className="font-mono text-xs">
+                                                        {WeightConverter.format(breedSizeInfo.adultWeightIdeal, weightUnit)} × {growthRatio.toFixed(2)}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center pt-2 border-t border-violet-200 dark:border-violet-700">
+                                                    <span className="font-bold text-[var(--text-primary)]">Projected Result:</span>
+                                                    <span className="text-lg font-bold text-violet-600 dark:text-violet-400">
+                                                        {WeightConverter.format(projectedAdultWeight, weightUnit)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <p className="text-xs text-[var(--text-muted)] mt-3 italic">
+                                                * Projection assumes your puppy maintains current growth trajectory relative to the WALTHAM standard curve.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Note about WALTHAM data */}
+                                    <div className="text-xs text-[var(--text-muted)] bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl p-3">
+                                        <strong className="text-amber-700 dark:text-amber-400">📊 About this data:</strong> The "Ideal" weights are based on WALTHAM Puppy Growth Charts, which represent typical breed category averages. Individual breeds within a category may vary. For example, a French Bulldog (small breed) will typically be heavier than a Cavalier King Charles Spaniel (also small breed).
+                                    </div>
+                                </div>
+                            );
+                        })()}
                     </div>
                 </div>
             )}
