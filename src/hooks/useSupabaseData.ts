@@ -371,7 +371,9 @@ export function useSupabaseData() {
         if (!profile?.id) return;
 
         try {
-            const dbData = { ...toSnakeCase(entry), profile_id: profile.id };
+            // Exclude foodBrandId until the column is added to the database
+            const { foodBrandId, ...entryWithoutBrandId } = entry;
+            const dbData = { ...toSnakeCase(entryWithoutBrandId), profile_id: profile.id };
             const { data, error } = await supabase
                 .from('feeding_log')
                 .insert(dbData)
@@ -380,7 +382,8 @@ export function useSupabaseData() {
             if (error) throw error;
 
             if (data) {
-                const newEntry = toCamelCase<FeedingEntry>(data);
+                // Add foodBrandId back to the local state even though it's not in DB
+                const newEntry = { ...toCamelCase<FeedingEntry>(data), foodBrandId };
                 setFeedingLog(prev => [newEntry, ...prev]);
             }
         } catch (err) {
