@@ -1,10 +1,11 @@
 import {
-    LayoutDashboard,
-    Apple,
-    Syringe,
-    TrendingUp,
-    BookOpen
-} from 'lucide-react';
+    HomeIcon,
+    FoodBowlIcon,
+    VaccineIcon,
+    GrowthIcon,
+    LearnIcon,
+    EmergencyIcon
+} from './icons/NavIcons';
 import type { TabId } from '../types';
 
 interface NavigationProps {
@@ -13,11 +14,12 @@ interface NavigationProps {
 }
 
 const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
-    { id: 'dashboard', label: 'Home', icon: <LayoutDashboard /> },
-    { id: 'nutrition', label: 'Food', icon: <Apple /> },
-    { id: 'health', label: 'Vaccines', icon: <Syringe /> },
-    { id: 'growth', label: 'Growth', icon: <TrendingUp /> },
-    { id: 'resources', label: 'Learn', icon: <BookOpen /> },
+    { id: 'dashboard', label: 'Home', icon: <HomeIcon /> },
+    { id: 'nutrition', label: 'Food', icon: <FoodBowlIcon /> },
+    { id: 'health', label: 'Shots', icon: <VaccineIcon /> },
+    { id: 'growth', label: 'Growth', icon: <GrowthIcon /> },
+    { id: 'resources', label: 'Learn', icon: <LearnIcon /> },
+    { id: 'emergency', label: 'SOS', icon: <EmergencyIcon /> },
 ];
 
 export function Navigation({ activeTab, onTabChange }: NavigationProps) {

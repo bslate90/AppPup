@@ -241,7 +241,7 @@ export const DEFAULT_APP_DATA: AppData = {
 /**
  * Navigation tab options
  */
-export type TabId = 'dashboard' | 'nutrition' | 'health' | 'growth' | 'resources';
+export type TabId = 'dashboard' | 'nutrition' | 'health' | 'growth' | 'resources' | 'emergency';
 
 /**
  * Educational resource link

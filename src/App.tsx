@@ -8,6 +8,7 @@ import NutritionEngine from './components/NutritionEngine';
 import VaccineManager from './components/VaccineManager';
 import GrowthTracker from './components/GrowthTracker';
 import ResourceHub from './components/ResourceHub';
+import EmergencyGuide from './components/EmergencyGuide';
 import ProfileModal from './components/ProfileModal';
 
 function App() {
@@ -152,6 +153,9 @@ function App() {
 
       case 'resources':
         return <ResourceHub />;
+
+      case 'emergency':
+        return <EmergencyGuide />;
 
       default:
         return null;
