@@ -134,10 +134,12 @@ export function VaccineManager({
                 {healthSchedule.length === 0 && (
                     <>
                         <div className="input-group">
-                            <label className="input-label">Puppy's Birth Date (or 8-week pickup date)</label>
+                            <label className="input-label" htmlFor="vaccine-birthdate">Puppy's Birth Date (or 8-week pickup date)</label>
                             <input
+                                id="vaccine-birthdate"
                                 type="date"
                                 className="input-field"
+                                title="Select puppy's birth date or 8-week pickup date"
                                 value={newBirthDate}
                                 onChange={(e) => setNewBirthDate(e.target.value)}
                             />
@@ -270,11 +272,14 @@ export function VaccineManager({
 
                                                     {/* Smart Dropdown for Vaccine Type */}
                                                     <div className="input-group mb-0">
-                                                        <label className="input-label flex items-center gap-1">
+                                                        <label className="input-label flex items-center gap-1" htmlFor="vaccine-type-select">
                                                             <Syringe className="w-3 h-3" /> Vaccine Type
                                                         </label>
                                                         <select
+                                                            id="vaccine-type-select"
                                                             className="input-field"
+                                                            title="Select vaccine type"
+                                                            aria-label="Select vaccine type"
                                                             value={recordForm.shotType || entry.type}
                                                             onChange={(e) => setRecordForm({ ...recordForm, shotType: e.target.value as VaccineType })}
                                                         >
@@ -303,12 +308,14 @@ export function VaccineManager({
 
                                                     <div className="space-y-3">
                                                         <div className="input-group mb-0">
-                                                            <label className="input-label flex items-center gap-1">
+                                                            <label className="input-label flex items-center gap-1" htmlFor="vaccine-admin-date">
                                                                 <Calendar className="w-3 h-3" /> Date Administered
                                                             </label>
                                                             <input
+                                                                id="vaccine-admin-date"
                                                                 type="date"
                                                                 className="input-field"
+                                                                title="Select date vaccine was administered"
                                                                 value={recordForm.administeredDate}
                                                                 onChange={(e) => setRecordForm({ ...recordForm, administeredDate: e.target.value })}
                                                             />

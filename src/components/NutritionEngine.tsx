@@ -124,6 +124,8 @@ export function NutritionEngine({
                             setFormData({ ...DEFAULT_FOOD_TEMPLATE, type: 'food' });
                         }}
                         className="p-1.5 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
+                        title="Add new food brand"
+                        aria-label="Add new food brand"
                     >
                         <Plus className={`w-5 h-5 transition-transform ${showAddForm && formData.type === 'food' ? 'rotate-45' : ''}`} />
                     </button>
@@ -136,6 +138,8 @@ export function NutritionEngine({
                             setFormData({ ...DEFAULT_FOOD_TEMPLATE, type: 'treat' });
                         }}
                         className="p-1.5 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
+                        title="Add new treat brand"
+                        aria-label="Add new treat brand"
                     >
                         <Plus className={`w-5 h-5 transition-transform ${showAddForm && formData.type === 'treat' ? 'rotate-45' : ''}`} />
                     </button>
@@ -179,12 +183,16 @@ export function NutritionEngine({
                                     <button
                                         onClick={() => startEdit(brand)}
                                         className="p-2 text-slate-400 hover:text-cyan-500 transition-colors"
+                                        title="Edit brand"
+                                        aria-label="Edit brand"
                                     >
                                         <Edit2 className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={() => onDeleteFood(brand.id)}
                                         className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                                        title="Delete brand"
+                                        aria-label="Delete brand"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -279,10 +287,12 @@ export function NutritionEngine({
                                     />
                                 </div>
                                 <div className="input-group">
-                                    <label className="input-label">Protein (%)</label>
+                                    <label className="input-label" htmlFor="nutrition-protein">Protein (%)</label>
                                     <input
+                                        id="nutrition-protein"
                                         type="number"
                                         className="input-field"
+                                        placeholder="e.g., 28"
                                         value={formData.protein}
                                         onChange={(e) => handleFormChange('protein', e.target.value)}
                                         step="0.1"
@@ -290,10 +300,12 @@ export function NutritionEngine({
                                     />
                                 </div>
                                 <div className="input-group">
-                                    <label className="input-label">Fat (%)</label>
+                                    <label className="input-label" htmlFor="nutrition-fat">Fat (%)</label>
                                     <input
+                                        id="nutrition-fat"
                                         type="number"
                                         className="input-field"
+                                        placeholder="e.g., 15"
                                         value={formData.fat}
                                         onChange={(e) => handleFormChange('fat', e.target.value)}
                                         step="0.1"
@@ -301,10 +313,12 @@ export function NutritionEngine({
                                     />
                                 </div>
                                 <div className="input-group">
-                                    <label className="input-label">Fiber (%)</label>
+                                    <label className="input-label" htmlFor="nutrition-fiber">Fiber (%)</label>
                                     <input
+                                        id="nutrition-fiber"
                                         type="number"
                                         className="input-field"
+                                        placeholder="e.g., 4"
                                         value={formData.fiber}
                                         onChange={(e) => handleFormChange('fiber', e.target.value)}
                                         step="0.1"
@@ -312,10 +326,12 @@ export function NutritionEngine({
                                     />
                                 </div>
                                 <div className="input-group">
-                                    <label className="input-label">Moisture (%)</label>
+                                    <label className="input-label" htmlFor="nutrition-moisture">Moisture (%)</label>
                                     <input
+                                        id="nutrition-moisture"
                                         type="number"
                                         className="input-field"
+                                        placeholder="e.g., 10"
                                         value={formData.moisture}
                                         onChange={(e) => handleFormChange('moisture', e.target.value)}
                                         step="0.1"
@@ -370,11 +386,11 @@ export function NutritionEngine({
 
                         {/* Stats Grid */}
                         <div className="grid grid-cols-2 gap-3 mb-4">
-                            <div className="stat-card" style={{ '--stat-bg-start': '#f59e0b', '--stat-bg-end': '#d97706' } as React.CSSProperties}>
+                            <div className="stat-card stat-card-amber">
                                 <div className="stat-value">{result.kcalPerKg}</div>
                                 <div className="stat-label">kcal/kg Food</div>
                             </div>
-                            <div className="stat-card" style={{ '--stat-bg-start': '#10b981', '--stat-bg-end': '#059669' } as React.CSSProperties}>
+                            <div className="stat-card stat-card-emerald">
                                 <div className="stat-value">{result.der}</div>
                                 <div className="stat-label">kcal/day Needed</div>
                             </div>

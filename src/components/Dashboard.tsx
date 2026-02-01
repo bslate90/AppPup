@@ -108,12 +108,12 @@ export function Dashboard({
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 gap-3">
-                    <div className="stat-card" style={{ '--stat-bg-start': '#06b6d4', '--stat-bg-end': '#0891b2' } as React.CSSProperties}>
+                    <div className="stat-card stat-card-cyan">
                         <Calendar className="w-5 h-5 mx-auto mb-1 opacity-80" />
                         <div className="stat-value text-lg">{ageText}</div>
                         <div className="stat-label">Age</div>
                     </div>
-                    <div className="stat-card" style={{ '--stat-bg-start': '#8b5cf6', '--stat-bg-end': '#7c3aed' } as React.CSSProperties}>
+                    <div className="stat-card stat-card-violet">
                         <Scale className="w-5 h-5 mx-auto mb-1 opacity-80" />
                         <div className="stat-value text-lg">{weightDisplay}</div>
                         <div className="stat-label">Weight</div>

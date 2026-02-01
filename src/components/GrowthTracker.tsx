@@ -191,10 +191,12 @@ export function GrowthTracker({
                     <div className="bg-[var(--bg-muted)]/50 border border-[var(--border-color)] rounded-2xl p-5 space-y-4 animate-slide-down">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="input-group mb-0">
-                                <label className="input-label">Date</label>
+                                <label className="input-label" htmlFor="weight-date">Date</label>
                                 <input
+                                    id="weight-date"
                                     type="date"
                                     className="input-field"
+                                    title="Select weight recording date"
                                     value={weightInput.date}
                                     onChange={(e) => setWeightInput({ ...weightInput, date: e.target.value })}
                                 />
@@ -513,6 +515,8 @@ export function GrowthTracker({
                                         <button
                                             className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
                                             onClick={() => onDeleteWeight(entry.id)}
+                                            title="Delete weight entry"
+                                            aria-label="Delete weight entry"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
@@ -542,10 +546,12 @@ export function GrowthTracker({
                     <div className="bg-[var(--bg-muted)]/50 border border-[var(--border-color)] rounded-2xl p-5 space-y-5 animate-slide-down">
                         {/* Date */}
                         <div className="input-group mb-0">
-                            <label className="input-label">Date</label>
+                            <label className="input-label" htmlFor="vitals-date">Date</label>
                             <input
+                                id="vitals-date"
                                 type="date"
                                 className="input-field"
+                                title="Select vitals recording date"
                                 value={vitalsInput.date}
                                 onChange={(e) => setVitalsInput({ ...vitalsInput, date: e.target.value })}
                             />
@@ -559,6 +565,7 @@ export function GrowthTracker({
                                     <button
                                         key={score}
                                         className={`fecal-dot w-9 h-9 text-sm ${vitalsInput.fecalScore === score ? 'selected ring-2 ring-offset-2 ring-cyan-500' : ''}`}
+                                        // Dynamic color from fecalScoreColors array requires inline style
                                         style={{
                                             backgroundColor: fecalScoreColors[score - 1],
                                             color: 'white'
@@ -663,6 +670,7 @@ export function GrowthTracker({
                                             {entry.fecalScore && (
                                                 <span
                                                     className="px-3 py-1.5 rounded-xl text-white text-[10px] font-bold shadow-sm"
+                                                    // Dynamic color from fecalScoreColors array requires inline style
                                                     style={{ backgroundColor: fecalScoreColors[entry.fecalScore - 1] }}
                                                 >
                                                     Fecal: {entry.fecalScore}

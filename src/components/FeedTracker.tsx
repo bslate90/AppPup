@@ -112,6 +112,7 @@ export function FeedTracker({
                     <div className="h-2 bg-white/30 rounded-full overflow-hidden">
                         <div
                             className="h-full bg-white rounded-full transition-all duration-500"
+                            // Dynamic width value requires inline style
                             style={{ width: `${progress}%` }}
                         />
                     </div>
@@ -266,6 +267,8 @@ export function FeedTracker({
                                         <button
                                             onClick={() => onDeleteFeeding(feeding.id)}
                                             className="p-1 text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
+                                            title="Delete feeding entry"
+                                            aria-label="Delete feeding entry"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>

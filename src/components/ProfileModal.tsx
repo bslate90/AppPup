@@ -70,6 +70,8 @@ export function ProfileModal({
                     <button
                         onClick={onClose}
                         className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+                        title="Close modal"
+                        aria-label="Close modal"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -96,13 +98,15 @@ export function ProfileModal({
 
                     {/* Birth Date */}
                     <div className="input-group">
-                        <label className="input-label flex items-center gap-1">
+                        <label className="input-label flex items-center gap-1" htmlFor="puppy-birthdate">
                             <Calendar className="w-3 h-3" />
                             Birth Date *
                         </label>
                         <input
+                            id="puppy-birthdate"
                             type="date"
                             className="input-field"
+                            title="Select puppy's birth date"
                             value={form.birthDate}
                             onChange={(e) => handleChange('birthDate', e.target.value)}
                             required
