@@ -312,7 +312,7 @@ export function EmergencyGuide() {
                                     {category.subtitle}
                                 </p>
                             </div>
-                            <div className="text-[var(--text-muted)] transition-transform duration-300" style={{ transform: expandedCategory === category.id ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                            <div className={`text-[var(--text-muted)] transition-transform duration-300 ${expandedCategory === category.id ? 'rotate-180' : 'rotate-0'}`}>
                                 <ChevronDown className="w-5 h-5" />
                             </div>
                         </div>

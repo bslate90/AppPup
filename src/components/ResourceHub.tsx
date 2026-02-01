@@ -223,8 +223,7 @@ function ProTipsLibrary() {
                                         </p>
                                     </div>
                                     <div
-                                        className="text-[var(--text-muted)] transition-transform duration-300"
-                                        style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                                        className={`text-[var(--text-muted)] transition-transform duration-300 ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
                                     >
                                         <ChevronDown className="w-5 h-5" />
                                     </div>
@@ -362,7 +361,7 @@ export function ResourceHub() {
                                     Purina 1-7 System • Digestive Health
                                 </p>
                             </div>
-                            <div className="text-[var(--text-muted)] transition-transform duration-300" style={{ transform: expandedId === 'fecal' ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                            <div className={`text-[var(--text-muted)] transition-transform duration-300 ${expandedId === 'fecal' ? 'rotate-180' : 'rotate-0'}`}>
                                 <ChevronDown className="w-5 h-5" />
                             </div>
                         </div>
@@ -442,7 +441,7 @@ export function ResourceHub() {
                                     Circulation & Oxygenation Status
                                 </p>
                             </div>
-                            <div className="text-[var(--text-muted)] transition-transform duration-300" style={{ transform: expandedId === 'gums' ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                            <div className={`text-[var(--text-muted)] transition-transform duration-300 ${expandedId === 'gums' ? 'rotate-180' : 'rotate-0'}`}>
                                 <ChevronDown className="w-5 h-5" />
                             </div>
                         </div>
