@@ -78,6 +78,188 @@ const categoryColors: Record<string, { gradient: string; glow: string; bg: strin
     },
 };
 
+// Pro Tips Data organized by category
+const proTipsCategories = [
+    {
+        id: 'nutrition',
+        title: 'Nutrition & Feeding',
+        icon: <Apple className="w-5 h-5" />,
+        gradient: 'from-emerald-500 to-teal-600',
+        borderColor: 'border-emerald-500/30',
+        tips: [
+            { icon: '🍽️', title: 'Meal Frequency by Age', description: '8-12 weeks: 4 meals/day. 3-6 months: 3 meals/day. 6+ months: 2 meals/day. Small, frequent meals prevent hypoglycemia in toy breeds.' },
+            { icon: '⚖️', title: 'Portion Control', description: 'Use a kitchen scale, not a measuring cup. Weight-based portions are 30% more accurate. Adjust every 2 weeks during growth.' },
+            { icon: '💧', title: 'Hydration Matters', description: 'Puppies need 0.5-1 oz water per pound body weight daily. Wet food counts! Monitor water bowl for tracking intake.' },
+            { icon: '🦴', title: 'Energy-Dense Food', description: 'Toy breeds need ≥3500 kcal/kg food. Their small stomachs can\'t hold enough low-density food to meet caloric needs.' },
+            { icon: '🥩', title: 'Protein Requirements', description: 'Puppies need 22-32% protein (AAFCO). Look for named meat sources (chicken, beef) as first ingredients, not by-products.' },
+            { icon: '🐟', title: 'Omega Fatty Acids', description: 'DHA supports brain development. Look for fish oil or algae-based DHA in puppy food. Aim for 0.1% DHA minimum.' },
+        ]
+    },
+    {
+        id: 'health',
+        title: 'Health Monitoring',
+        icon: <Activity className="w-5 h-5" />,
+        gradient: 'from-rose-500 to-pink-600',
+        borderColor: 'border-rose-500/30',
+        tips: [
+            { icon: '📊', title: 'Weekly Weigh-Ins', description: 'Weigh at same time, same scale, weekly. 10-15% weekly gain is healthy for toy breeds. Sudden changes signal problems.' },
+            { icon: '💩', title: 'Stool Monitoring', description: 'Healthy stool is chocolate brown, firm but not hard (score 2-3). Black, red, or white specs require immediate vet attention.' },
+            { icon: '👁️', title: 'Eye Health', description: 'Clear, bright eyes with no discharge. Excessive tearing or redness can indicate allergies, injury, or infection.' },
+            { icon: '👂', title: 'Ear Checks', description: 'Healthy ears are pink, odor-free. Brown discharge or yeast smell indicates infection. Clean weekly with vet-approved solution.' },
+            { icon: '🦷', title: 'Dental Development', description: 'Baby teeth start falling out at 3-4 months. By 6 months, all 42 adult teeth should be in. Retained baby teeth need extraction.' },
+            { icon: '🌡️', title: 'Temperature Baseline', description: 'Normal puppy temp: 99.5-102.5°F (37.5-39.2°C). Above 103°F is fever. Below 99°F is hypothermia—both are emergencies.' },
+        ]
+    },
+    {
+        id: 'vaccination',
+        title: 'Vaccination Knowledge',
+        icon: <Syringe className="w-5 h-5" />,
+        gradient: 'from-blue-500 to-indigo-600',
+        borderColor: 'border-blue-500/30',
+        tips: [
+            { icon: '💉', title: 'Core vs Non-Core', description: 'Core: DAPP, Rabies (required). Non-core: Lepto, Bordetella, Lyme (based on lifestyle/region). Discuss with your vet.' },
+            { icon: '⏰', title: 'The 16-Week Rule', description: 'Final DAPP booster at 16+ weeks is CRITICAL. Maternal antibodies can block earlier vaccines. Don\'t skip this one!' },
+            { icon: '📅', title: 'Booster Schedule', description: 'After puppy series: 1-year booster, then every 3 years for core vaccines. Lepto/Bordetella need annual boosters.' },
+            { icon: '🛡️', title: 'Titer Testing', description: 'Blood tests measure immunity levels. Alternative to automatic re-vaccination. Discuss with holistic or integrative vets.' },
+            { icon: '⚠️', title: 'Post-Vaccine Care', description: 'Mild lethargy 24-48 hrs is normal. Watch for: facial swelling, vomiting, difficulty breathing—these are emergencies.' },
+        ]
+    },
+    {
+        id: 'training',
+        title: 'Training & Behavior',
+        icon: <Sparkles className="w-5 h-5" />,
+        gradient: 'from-violet-500 to-purple-600',
+        borderColor: 'border-violet-500/30',
+        tips: [
+            { icon: '🧠', title: 'Socialization Window', description: '3-14 weeks is the critical socialization period. Expose to 100 new things safely. This shapes lifelong behavior!' },
+            { icon: '🏠', title: 'Crate Training', description: 'Crate = safe den, not punishment. Size: stand, turn, lie down. Max crate time: age in months + 1 hour.' },
+            { icon: '🎯', title: 'Positive Reinforcement', description: 'Reward within 1-2 seconds of desired behavior. Use tiny treats (pea-sized) to avoid overfeeding during training.' },
+            { icon: '😴', title: 'Sleep Requirements', description: 'Puppies need 18-20 hours sleep daily! Overtired puppies become nippy and hyperactive. Enforce nap times.' },
+            { icon: '🚫', title: 'Bite Inhibition', description: 'Yelp and withdraw when puppy bites too hard. Redirect to toys. Learn this by 18 weeks or it\'s harder to correct.' },
+            { icon: '🎾', title: 'Play = Learning', description: 'Short play sessions (5-10 min) several times daily. Tug teaches impulse control. Fetch builds recall foundation.' },
+        ]
+    },
+    {
+        id: 'safety',
+        title: 'Safety & Emergencies',
+        icon: <Shield className="w-5 h-5" />,
+        gradient: 'from-red-500 to-orange-600',
+        borderColor: 'border-red-500/30',
+        tips: [
+            { icon: '🍫', title: 'Toxic Foods', description: 'NEVER: Chocolate, grapes, xylitol, onions, garlic, macadamia nuts, alcohol, caffeine. Even small amounts can be fatal.' },
+            { icon: '🌱', title: 'Toxic Plants', description: 'Lilies, azaleas, tulips, sago palm are deadly. Check ASPCA poison plant database before bringing plants home.' },
+            { icon: '🚨', title: 'Emergency Signs', description: 'Immediate vet: collapse, seizures, bloated belly, labored breathing, pale gums, not eating 24+ hrs, blood in stool/urine.' },
+            { icon: '🩹', title: 'First Aid Kit', description: 'Keep: gauze, vet wrap, hydrogen peroxide (induces vomiting—call poison control first!), digital thermometer, tweezers.' },
+            { icon: '🏥', title: 'Emergency Vet Info', description: 'Save 24/7 emergency vet number NOW. Know location. ASPCA Poison Control: (888) 426-4435 ($75 fee).' },
+            { icon: '🔥', title: 'Heatstroke Prevention', description: 'Toy breeds overheat fast. Signs: excessive panting, drooling, red gums. Never leave in car. Walk in cool hours.' },
+        ]
+    },
+    {
+        id: 'growth',
+        title: 'Growth & Development',
+        icon: <TrendingUp className="w-5 h-5" />,
+        gradient: 'from-amber-500 to-yellow-600',
+        borderColor: 'border-amber-500/30',
+        tips: [
+            { icon: '📈', title: 'Growth Spurts', description: 'Toy breeds grow fastest 8-16 weeks. Expect 2-4 oz gain weekly. Growth slows dramatically after 6 months.' },
+            { icon: '🍼', title: 'Hypoglycemia Risk', description: 'Toy puppies under 12 weeks are HIGH RISK. Signs: weakness, trembling, glazed eyes. Give Karo syrup and call vet immediately.' },
+            { icon: '💪', title: 'Exercise Limits', description: '5 minutes of exercise per month of age, twice daily. Over-exercising damages developing joints. No jumping until 1 year!' },
+            { icon: '🦴', title: 'Growth Plate Safety', description: 'Growth plates close at 9-12 months in toy breeds. Until then: no high-impact activities, stairs limited, no jumping from heights.' },
+            { icon: '🧪', title: 'Neutering Timing', description: 'Current research suggests waiting until growth is complete (9-12 months for toy breeds). Discuss optimal timing with your vet.' },
+            { icon: '📝', title: 'Milestone Tracking', description: 'Eyes open: 2 weeks. Walking: 3 weeks. Weaning: 6-8 weeks. Teething: 3-6 months. Adult size: 9-12 months (toy breeds).' },
+        ]
+    },
+];
+
+// Pro Tips Library Component with collapsible categories
+function ProTipsLibrary() {
+    const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+
+    const toggleCategory = (categoryId: string) => {
+        setExpandedCategories(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(categoryId)) {
+                newSet.delete(categoryId);
+            } else {
+                newSet.add(categoryId);
+            }
+            return newSet;
+        });
+    };
+
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center gap-2 px-1">
+                <Zap className="w-4 h-4 text-[var(--color-primary)]" />
+                <h3 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">
+                    Pro Tips Library
+                </h3>
+            </div>
+
+            <div className="space-y-3">
+                {proTipsCategories.map((category) => {
+                    const isExpanded = expandedCategories.has(category.id);
+
+                    return (
+                        <div
+                            key={category.id}
+                            className={`glass-card-interactive overflow-hidden ${category.borderColor} border`}
+                        >
+                            {/* Category Header - Clickable */}
+                            <button
+                                onClick={() => toggleCategory(category.id)}
+                                className="w-full text-left p-4 transition-all duration-200"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${category.gradient} text-white flex items-center justify-center shadow-lg`}>
+                                        {category.icon}
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-[var(--text-primary)] text-sm">
+                                            {category.title}
+                                        </h4>
+                                        <p className="text-xs text-[var(--text-muted)]">
+                                            {category.tips.length} tips
+                                        </p>
+                                    </div>
+                                    <div
+                                        className="text-[var(--text-muted)] transition-transform duration-300"
+                                        style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                                    >
+                                        <ChevronDown className="w-5 h-5" />
+                                    </div>
+                                </div>
+                            </button>
+
+                            {/* Expandable Tips Content */}
+                            {isExpanded && (
+                                <div className="px-4 pb-4 animate-slide-down">
+                                    <div className="grid gap-2">
+                                        {category.tips.map((tip) => (
+                                            <div
+                                                key={tip.title}
+                                                className="glass-panel p-3 rounded-xl"
+                                            >
+                                                <div className="flex gap-3">
+                                                    <div className="text-xl flex-shrink-0">{tip.icon}</div>
+                                                    <div>
+                                                        <h5 className="font-bold text-[var(--text-primary)] text-xs">{tip.title}</h5>
+                                                        <p className="text-[11px] text-[var(--text-secondary)] mt-0.5 leading-relaxed">{tip.description}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
 // Custom SVG Icons for better resolution and design
 const FecalIcon = () => (
     <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7" stroke="currentColor" strokeWidth="1.5">
@@ -447,182 +629,8 @@ export function ResourceHub() {
                 })}
             </div>
 
-            {/* Pro Tips - Organized by Category */}
-            <div className="space-y-8">
-                <div className="flex items-center gap-2 px-1">
-                    <Zap className="w-4 h-4 text-[var(--color-primary)]" />
-                    <h3 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">
-                        Pro Tips Library
-                    </h3>
-                </div>
-
-                {/* Nutrition Tips */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 pl-1">
-                        <Apple className="w-4 h-4 text-emerald-500" />
-                        <h4 className="text-sm font-bold text-[var(--text-primary)]">Nutrition & Feeding</h4>
-                    </div>
-                    <div className="grid gap-3">
-                        {[
-                            { icon: '🍽️', title: 'Meal Frequency by Age', description: '8-12 weeks: 4 meals/day. 3-6 months: 3 meals/day. 6+ months: 2 meals/day. Small, frequent meals prevent hypoglycemia in toy breeds.' },
-                            { icon: '⚖️', title: 'Portion Control', description: 'Use a kitchen scale, not a measuring cup. Weight-based portions are 30% more accurate. Adjust every 2 weeks during growth.' },
-                            { icon: '💧', title: 'Hydration Matters', description: 'Puppies need 0.5-1 oz water per pound body weight daily. Wet food counts! Monitor water bowl for tracking intake.' },
-                            { icon: '🦴', title: 'Energy-Dense Food', description: 'Toy breeds need ≥3500 kcal/kg food. Their small stomachs can\'t hold enough low-density food to meet caloric needs.' },
-                            { icon: '🥩', title: 'Protein Requirements', description: 'Puppies need 22-32% protein (AAFCO). Look for named meat sources (chicken, beef) as first ingredients, not by-products.' },
-                            { icon: '🐟', title: 'Omega Fatty Acids', description: 'DHA supports brain development. Look for fish oil or algae-based DHA in puppy food. Aim for 0.1% DHA minimum.' },
-                        ].map((tip) => (
-                            <div key={tip.title} className="glass-card p-4 bg-gradient-to-r from-emerald-500/5 to-teal-500/5 border border-emerald-500/20">
-                                <div className="flex gap-3">
-                                    <div className="text-2xl flex-shrink-0">{tip.icon}</div>
-                                    <div>
-                                        <h5 className="font-bold text-[var(--text-primary)] text-sm">{tip.title}</h5>
-                                        <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">{tip.description}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Health Monitoring Tips */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 pl-1">
-                        <Activity className="w-4 h-4 text-rose-500" />
-                        <h4 className="text-sm font-bold text-[var(--text-primary)]">Health Monitoring</h4>
-                    </div>
-                    <div className="grid gap-3">
-                        {[
-                            { icon: '📊', title: 'Weekly Weigh-Ins', description: 'Weigh at same time, same scale, weekly. 10-15% weekly gain is healthy for toy breeds. Sudden changes signal problems.' },
-                            { icon: '💩', title: 'Stool Monitoring', description: 'Healthy stool is chocolate brown, firm but not hard (score 2-3). Black, red, or white specs require immediate vet attention.' },
-                            { icon: '👁️', title: 'Eye Health', description: 'Clear, bright eyes with no discharge. Excessive tearing or redness can indicate allergies, injury, or infection.' },
-                            { icon: '👂', title: 'Ear Checks', description: 'Healthy ears are pink, odor-free. Brown discharge or yeast smell indicates infection. Clean weekly with vet-approved solution.' },
-                            { icon: '🦷', title: 'Dental Development', description: 'Baby teeth start falling out at 3-4 months. By 6 months, all 42 adult teeth should be in. Retained baby teeth need extraction.' },
-                            { icon: '🌡️', title: 'Temperature Baseline', description: 'Normal puppy temp: 99.5-102.5°F (37.5-39.2°C). Above 103°F is fever. Below 99°F is hypothermia—both are emergencies.' },
-                        ].map((tip) => (
-                            <div key={tip.title} className="glass-card p-4 bg-gradient-to-r from-rose-500/5 to-pink-500/5 border border-rose-500/20">
-                                <div className="flex gap-3">
-                                    <div className="text-2xl flex-shrink-0">{tip.icon}</div>
-                                    <div>
-                                        <h5 className="font-bold text-[var(--text-primary)] text-sm">{tip.title}</h5>
-                                        <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">{tip.description}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Vaccination Tips */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 pl-1">
-                        <Syringe className="w-4 h-4 text-blue-500" />
-                        <h4 className="text-sm font-bold text-[var(--text-primary)]">Vaccination Knowledge</h4>
-                    </div>
-                    <div className="grid gap-3">
-                        {[
-                            { icon: '💉', title: 'Core vs Non-Core', description: 'Core: DAPP, Rabies (required). Non-core: Lepto, Bordetella, Lyme (based on lifestyle/region). Discuss with your vet.' },
-                            { icon: '⏰', title: 'The 16-Week Rule', description: 'Final DAPP booster at 16+ weeks is CRITICAL. Maternal antibodies can block earlier vaccines. Don\'t skip this one!' },
-                            { icon: '📅', title: 'Booster Schedule', description: 'After puppy series: 1-year booster, then every 3 years for core vaccines. Lepto/Bordetella need annual boosters.' },
-                            { icon: '🛡️', title: 'Titer Testing', description: 'Blood tests measure immunity levels. Alternative to automatic re-vaccination. Discuss with holistic or integrative vets.' },
-                            { icon: '⚠️', title: 'Post-Vaccine Care', description: 'Mild lethargy 24-48 hrs is normal. Watch for: facial swelling, vomiting, difficulty breathing—these are emergencies.' },
-                        ].map((tip) => (
-                            <div key={tip.title} className="glass-card p-4 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 border border-blue-500/20">
-                                <div className="flex gap-3">
-                                    <div className="text-2xl flex-shrink-0">{tip.icon}</div>
-                                    <div>
-                                        <h5 className="font-bold text-[var(--text-primary)] text-sm">{tip.title}</h5>
-                                        <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">{tip.description}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Training & Behavior Tips */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 pl-1">
-                        <Sparkles className="w-4 h-4 text-violet-500" />
-                        <h4 className="text-sm font-bold text-[var(--text-primary)]">Training & Behavior</h4>
-                    </div>
-                    <div className="grid gap-3">
-                        {[
-                            { icon: '🧠', title: 'Socialization Window', description: '3-14 weeks is the critical socialization period. Expose to 100 new things safely. This shapes lifelong behavior!' },
-                            { icon: '🏠', title: 'Crate Training', description: 'Crate = safe den, not punishment. Size: stand, turn, lie down. Max crate time: age in months + 1 hour.' },
-                            { icon: '🎯', title: 'Positive Reinforcement', description: 'Reward within 1-2 seconds of desired behavior. Use tiny treats (pea-sized) to avoid overfeeding during training.' },
-                            { icon: '😴', title: 'Sleep Requirements', description: 'Puppies need 18-20 hours sleep daily! Overtired puppies become nippy and hyperactive. Enforce nap times.' },
-                            { icon: '🚫', title: 'Bite Inhibition', description: 'Yelp and withdraw when puppy bites too hard. Redirect to toys. Learn this by 18 weeks or it\'s harder to correct.' },
-                            { icon: '🎾', title: 'Play = Learning', description: 'Short play sessions (5-10 min) several times daily. Tug teaches impulse control. Fetch builds recall foundation.' },
-                        ].map((tip) => (
-                            <div key={tip.title} className="glass-card p-4 bg-gradient-to-r from-violet-500/5 to-purple-500/5 border border-violet-500/20">
-                                <div className="flex gap-3">
-                                    <div className="text-2xl flex-shrink-0">{tip.icon}</div>
-                                    <div>
-                                        <h5 className="font-bold text-[var(--text-primary)] text-sm">{tip.title}</h5>
-                                        <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">{tip.description}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Safety & Emergency Tips */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 pl-1">
-                        <Shield className="w-4 h-4 text-red-500" />
-                        <h4 className="text-sm font-bold text-[var(--text-primary)]">Safety & Emergencies</h4>
-                    </div>
-                    <div className="grid gap-3">
-                        {[
-                            { icon: '🍫', title: 'Toxic Foods', description: 'NEVER: Chocolate, grapes, xylitol, onions, garlic, macadamia nuts, alcohol, caffeine. Even small amounts can be fatal.' },
-                            { icon: '🌱', title: 'Toxic Plants', description: 'Lilies, azaleas, tulips, sago palm are deadly. Check ASPCA poison plant database before bringing plants home.' },
-                            { icon: '🚨', title: 'Emergency Signs', description: 'Immediate vet: collapse, seizures, bloated belly, labored breathing, pale gums, not eating 24+ hrs, blood in stool/urine.' },
-                            { icon: '🩹', title: 'First Aid Kit', description: 'Keep: gauze, vet wrap, hydrogen peroxide (induces vomiting—call poison control first!), digital thermometer, tweezers.' },
-                            { icon: '🏥', title: 'Emergency Vet Info', description: 'Save 24/7 emergency vet number NOW. Know location. ASPCA Poison Control: (888) 426-4435 ($75 fee).' },
-                            { icon: '🔥', title: 'Heatstroke Prevention', description: 'Toy breeds overheat fast. Signs: excessive panting, drooling, red gums. Never leave in car. Walk in cool hours.' },
-                        ].map((tip) => (
-                            <div key={tip.title} className="glass-card p-4 bg-gradient-to-r from-red-500/5 to-orange-500/5 border border-red-500/20">
-                                <div className="flex gap-3">
-                                    <div className="text-2xl flex-shrink-0">{tip.icon}</div>
-                                    <div>
-                                        <h5 className="font-bold text-[var(--text-primary)] text-sm">{tip.title}</h5>
-                                        <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">{tip.description}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Growth & Development Tips */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 pl-1">
-                        <TrendingUp className="w-4 h-4 text-amber-500" />
-                        <h4 className="text-sm font-bold text-[var(--text-primary)]">Growth & Development</h4>
-                    </div>
-                    <div className="grid gap-3">
-                        {[
-                            { icon: '📈', title: 'Growth Spurts', description: 'Toy breeds grow fastest 8-16 weeks. Expect 2-4 oz gain weekly. Growth slows dramatically after 6 months.' },
-                            { icon: '🍼', title: 'Hypoglycemia Risk', description: 'Toy puppies under 12 weeks are HIGH RISK. Signs: weakness, trembling, glazed eyes. Give Karo syrup and call vet immediately.' },
-                            { icon: '💪', title: 'Exercise Limits', description: '5 minutes of exercise per month of age, twice daily. Over-exercising damages developing joints. No jumping until 1 year!' },
-                            { icon: '🦴', title: 'Growth Plate Safety', description: 'Growth plates close at 9-12 months in toy breeds. Until then: no high-impact activities, stairs limited, no jumping from heights.' },
-                            { icon: '🧪', title: 'Neutering Timing', description: 'Current research suggests waiting until growth is complete (9-12 months for toy breeds). Discuss optimal timing with your vet.' },
-                            { icon: '📝', title: 'Milestone Tracking', description: 'Eyes open: 2 weeks. Walking: 3 weeks. Weaning: 6-8 weeks. Teething: 3-6 months. Adult size: 9-12 months (toy breeds).' },
-                        ].map((tip) => (
-                            <div key={tip.title} className="glass-card p-4 bg-gradient-to-r from-amber-500/5 to-yellow-500/5 border border-amber-500/20">
-                                <div className="flex gap-3">
-                                    <div className="text-2xl flex-shrink-0">{tip.icon}</div>
-                                    <div>
-                                        <h5 className="font-bold text-[var(--text-primary)] text-sm">{tip.title}</h5>
-                                        <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">{tip.description}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+            {/* Pro Tips - Collapsible Categories */}
+            <ProTipsLibrary />
 
             {/* Disclaimer - Glass */}
             <div className="glass-card bg-[var(--bg-muted)]/30 border border-[var(--border-color)] p-6">

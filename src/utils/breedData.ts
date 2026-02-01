@@ -238,11 +238,49 @@ const BREED_MAP: Record<string, BreedSize> = {
 
 /**
  * Get the size category for a breed
+ * Uses fuzzy matching for better user experience
  * Returns 'small' as default if breed not found
  */
 export function getBreedSize(breed: string): BreedSize {
+    if (!breed || typeof breed !== 'string') {
+        console.warn('getBreedSize: Invalid breed input, defaulting to "small"');
+        return 'small';
+    }
+
     const normalized = breed.toLowerCase().trim();
-    return BREED_MAP[normalized] || 'small';
+
+    // Exact match first
+    if (BREED_MAP[normalized]) {
+        return BREED_MAP[normalized];
+    }
+
+    // Try partial matching - check if any breed key contains our input
+    for (const [key, size] of Object.entries(BREED_MAP)) {
+        // If input contains a known breed name
+        if (normalized.includes(key) || key.includes(normalized)) {
+            return size as BreedSize;
+        }
+    }
+
+    // Check for common variations
+    const variations = [
+        normalized.replace(/terrier/g, ''),
+        normalized.replace(/bulldog/g, ''),
+        normalized.replace(/poodle/g, ''),
+        normalized.replace(/retriever/g, ''),
+        normalized.replace(/shepherd/g, ''),
+        normalized.replace(/spaniel/g, ''),
+        normalized.replace(/mix/g, '').replace(/mixed/g, ''),
+    ].map(v => v.trim());
+
+    for (const variant of variations) {
+        if (variant && BREED_MAP[variant]) {
+            return BREED_MAP[variant];
+        }
+    }
+
+    console.log(`getBreedSize: Breed "${breed}" not found, defaulting to "small"`);
+    return 'small';
 }
 
 /**

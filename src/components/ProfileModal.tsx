@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, PawPrint, Calendar, Palette, Tag } from 'lucide-react';
 import type { PuppyProfile } from '../types';
 
@@ -30,6 +30,15 @@ export function ProfileModal({
     const [form, setForm] = useState<Omit<PuppyProfile, 'id'>>(
         profile ? { ...profile } : DEFAULT_PROFILE
     );
+
+    // Sync form when profile prop changes (e.g., loaded from database)
+    useEffect(() => {
+        if (profile) {
+            setForm({ ...profile });
+        } else {
+            setForm(DEFAULT_PROFILE);
+        }
+    }, [profile]);
 
     if (!isOpen) return null;
 
