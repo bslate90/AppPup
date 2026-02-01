@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
     Syringe,
     Calendar,
@@ -8,11 +8,14 @@ import {
     ChevronDown,
     ChevronUp,
     User,
-    Hash
+    Hash,
+    Search,
+    Sparkles,
+    X
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
-import type { HealthScheduleEntry, VaccineType } from '../types';
-import { VACCINE_COMPOSITION } from '../types';
+import type { HealthScheduleEntry, VaccineType, VaccineBrandMapping } from '../types';
+import { VACCINE_COMPOSITION, findVaccineMatches } from '../types';
 import { getAlertStatus } from '../utils/vetFormulas';
 
 interface VaccineManagerProps {
@@ -62,6 +65,62 @@ export function VaccineManager({
         administeredDate: new Date().toISOString().split('T')[0],
         step: 1, // 1: Quick Select, 2: Smart Dropdown/Details
     });
+
+    // Smart Entry state
+    const [smartEntrySearch, setSmartEntrySearch] = useState('');
+    const [showSmartEntry, setShowSmartEntry] = useState(false);
+    const [selectedBrand, setSelectedBrand] = useState<VaccineBrandMapping | null>(null);
+    const [smartEntryDate, setSmartEntryDate] = useState(new Date().toISOString().split('T')[0]);
+    const [smartEntryAdmin, setSmartEntryAdmin] = useState('');
+    const [smartEntryLot, setSmartEntryLot] = useState('');
+
+    // Filter vaccine matches based on search input
+    const vaccineMatches = useMemo(() => {
+        if (!smartEntrySearch.trim()) return [];
+        return findVaccineMatches(smartEntrySearch).slice(0, 8); // Limit to 8 results
+    }, [smartEntrySearch]);
+
+    // Find the next pending entry for a given vaccine type
+    const findNextPendingEntry = (type: VaccineType): HealthScheduleEntry | null => {
+        // For DAPP variants, search in DAPP group
+        const searchTypes: VaccineType[] = type.startsWith('DAPP')
+            ? ['DAPP', 'DAPP_5', 'DAPP_6', 'DAPP_8', 'DAPP_9']
+            : [type];
+
+        const pending = healthSchedule
+            .filter(e => searchTypes.includes(e.type) && !e.administered)
+            .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+
+        return pending[0] || null;
+    };
+
+    // Handle smart entry submission
+    const handleSmartEntrySubmit = () => {
+        if (!selectedBrand) return;
+
+        const nextEntry = findNextPendingEntry(selectedBrand.type);
+        if (!nextEntry) {
+            alert(`No pending ${selectedBrand.type} entries found in schedule.`);
+            return;
+        }
+
+        // Update the entry with the selected brand info
+        onUpdateEntry(nextEntry.id, {
+            administered: true,
+            administeredDate: new Date(smartEntryDate).toISOString(),
+            administrator: smartEntryAdmin || undefined,
+            lotNumber: smartEntryLot || undefined,
+            type: selectedBrand.type,
+            notes: `Vaccine: ${selectedBrand.brandName}${selectedBrand.manufacturer ? ` (${selectedBrand.manufacturer})` : ''}`,
+        });
+
+        // Reset smart entry form
+        setSmartEntrySearch('');
+        setSelectedBrand(null);
+        setSmartEntryAdmin('');
+        setSmartEntryLot('');
+        setShowSmartEntry(false);
+    };
 
     const handleGenerateSchedule = () => {
         if (newBirthDate) {
@@ -155,6 +214,216 @@ export function VaccineManager({
                     </>
                 )}
             </div>
+
+            {/* Smart Vaccine Entry */}
+            {healthSchedule.length > 0 && (
+                <div className="card">
+                    <button
+                        onClick={() => setShowSmartEntry(!showSmartEntry)}
+                        className="w-full flex items-center justify-between p-2 -m-2"
+                    >
+                        <div className="flex items-center gap-2">
+                            <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-white">
+                                <Sparkles className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                                <h3 className="font-bold text-slate-800">Smart Vaccine Entry</h3>
+                                <p className="text-xs text-slate-500">Enter vaccine label name to auto-record</p>
+                            </div>
+                        </div>
+                        {showSmartEntry ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+                    </button>
+
+                    {showSmartEntry && (
+                        <div className="mt-4 pt-4 border-t border-slate-200 space-y-4 animate-in slide-in-from-top-2">
+                            {/* Search Input */}
+                            <div className="relative">
+                                <div className="input-group mb-0">
+                                    <label className="input-label flex items-center gap-1">
+                                        <Search className="w-3 h-3" />
+                                        Vaccine Label Name
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            className="input-field pr-10"
+                                            placeholder="e.g., Nobivac, Vanguard Plus 5, Spectra 9..."
+                                            value={smartEntrySearch}
+                                            onChange={(e) => {
+                                                setSmartEntrySearch(e.target.value);
+                                                setSelectedBrand(null);
+                                            }}
+                                        />
+                                        {smartEntrySearch && (
+                                            <button
+                                                onClick={() => {
+                                                    setSmartEntrySearch('');
+                                                    setSelectedBrand(null);
+                                                }}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                                aria-label="Clear search"
+                                                title="Clear search"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Search Results Dropdown */}
+                                {vaccineMatches.length > 0 && !selectedBrand && (
+                                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+                                        {vaccineMatches.map((brand, idx) => (
+                                            <button
+                                                key={`${brand.brandName}-${idx}`}
+                                                className="w-full text-left p-3 hover:bg-violet-50 transition-colors border-b border-slate-100 last:border-b-0"
+                                                onClick={() => {
+                                                    setSelectedBrand(brand);
+                                                    setSmartEntrySearch(brand.brandName);
+                                                }}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="font-bold text-slate-800">{brand.brandName}</p>
+                                                        <p className="text-xs text-slate-500">
+                                                            {brand.manufacturer} • {brand.type.replace('_', ' ')}
+                                                        </p>
+                                                    </div>
+                                                    <span className={`px-2 py-1 rounded-lg text-[10px] font-bold text-white bg-gradient-to-r ${vaccineColors[brand.type]}`}>
+                                                        {brand.type.replace('_', ' ')}
+                                                    </span>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Selected Brand Details */}
+                            {selectedBrand && (
+                                <div className="space-y-4 animate-in fade-in">
+                                    {/* Brand Info Card */}
+                                    <div className={`p-4 rounded-xl text-white bg-gradient-to-r ${vaccineColors[selectedBrand.type]}`}>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-2xl">{vaccineEmojis[selectedBrand.type]}</span>
+                                            <div>
+                                                <h4 className="font-bold">{selectedBrand.brandName}</h4>
+                                                <p className="text-sm opacity-90">{selectedBrand.manufacturer}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Vaccine Components */}
+                                    <div className="p-3 bg-violet-50 rounded-xl border border-violet-200">
+                                        <p className="text-[10px] font-bold text-violet-800 uppercase tracking-wider mb-2">
+                                            Protects Against:
+                                        </p>
+                                        <div className="flex flex-wrap gap-1">
+                                            {VACCINE_COMPOSITION[selectedBrand.type]?.map((disease, idx) => (
+                                                <span key={idx} className="px-2 py-1 bg-white rounded-lg text-[10px] font-medium text-violet-700 border border-violet-200">
+                                                    {disease}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Next pending entry info */}
+                                    {(() => {
+                                        const nextEntry = findNextPendingEntry(selectedBrand.type);
+                                        if (!nextEntry) {
+                                            return (
+                                                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
+                                                    <p className="text-sm text-amber-800 font-medium">
+                                                        ⚠️ No pending {selectedBrand.type.replace('_', ' ')} entries in schedule.
+                                                    </p>
+                                                </div>
+                                            );
+                                        }
+                                        return (
+                                            <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                                                <p className="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-1">
+                                                    Will Mark Complete:
+                                                </p>
+                                                <p className="text-sm text-emerald-700 font-medium">
+                                                    Week {nextEntry.weekNumber} • Due {format(new Date(nextEntry.dueDate), 'MMM d, yyyy')}
+                                                </p>
+                                            </div>
+                                        );
+                                    })()}
+
+                                    {/* Additional Details */}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="input-group mb-0">
+                                            <label className="input-label flex items-center gap-1">
+                                                <Calendar className="w-3 h-3" />
+                                                Date Given
+                                            </label>
+                                            <input
+                                                type="date"
+                                                className="input-field"
+                                                value={smartEntryDate}
+                                                onChange={(e) => setSmartEntryDate(e.target.value)}
+                                                title="Date vaccine was administered"
+                                                aria-label="Date vaccine was administered"
+                                            />
+                                        </div>
+                                        <div className="input-group mb-0">
+                                            <label className="input-label flex items-center gap-1">
+                                                <User className="w-3 h-3" />
+                                                Vet/Clinic
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className="input-field"
+                                                placeholder="Optional"
+                                                value={smartEntryAdmin}
+                                                onChange={(e) => setSmartEntryAdmin(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="input-group mb-0">
+                                        <label className="input-label flex items-center gap-1">
+                                            <Hash className="w-3 h-3" />
+                                            Lot/Serial Number
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="input-field"
+                                            placeholder="Optional"
+                                            value={smartEntryLot}
+                                            onChange={(e) => setSmartEntryLot(e.target.value)}
+                                        />
+                                    </div>
+
+                                    {/* Submit Button */}
+                                    <button
+                                        className="btn btn-success w-full py-4 rounded-xl shadow-lg text-base font-bold"
+                                        onClick={handleSmartEntrySubmit}
+                                        disabled={!findNextPendingEntry(selectedBrand.type)}
+                                    >
+                                        <CheckCircle2 className="w-5 h-5" />
+                                        Record Vaccine
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Quick Tips */}
+                            {!selectedBrand && (
+                                <div className="p-3 bg-slate-50 rounded-xl">
+                                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2">
+                                        💡 Tips
+                                    </p>
+                                    <ul className="text-xs text-slate-500 space-y-1">
+                                        <li>• Type the vaccine name from the label (e.g., "Nobivac", "Vanguard")</li>
+                                        <li>• Search by manufacturer (e.g., "Zoetis", "Merck")</li>
+                                        <li>• Or by vaccine type (e.g., "5-way", "DHPP")</li>
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Schedule by Vaccine Type */}
             {Object.entries(groupedSchedule).map(([type, entries]) => (
