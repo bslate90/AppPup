@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     BookOpen,
     ExternalLink,
@@ -13,9 +13,13 @@ import {
     Sparkles,
     Shield,
     Zap,
-    Info
+    Info,
+    AlertTriangle,
+    ChevronRight
 } from 'lucide-react';
 import type { ResourceLink } from '../types';
+import { getAllDiseases, getDiseaseById, type DiseaseInfo } from '../data/diseaseInfo';
+import { DiseaseInfoModal } from './DiseaseInfoModal';
 
 const resources: ResourceLink[] = [
     {
@@ -287,6 +291,44 @@ const CRTIcon = () => (
 
 export function ResourceHub() {
     const [expandedId, setExpandedId] = useState<string | null>(null);
+    const [selectedDisease, setSelectedDisease] = useState<DiseaseInfo | null>(null);
+    const [showDiseaseModal, setShowDiseaseModal] = useState(false);
+
+    // Group diseases by category for display
+    const coreVaccineDiseases = getAllDiseases().filter(d =>
+        ['distemper', 'parvovirus', 'adenovirus', 'parainfluenza'].includes(d.id)
+    );
+    const expandedVaccineDiseases = getAllDiseases().filter(d =>
+        ['leptospirosis', 'coronavirus', 'bordetella', 'rabies'].includes(d.id)
+    );
+    const parasiteDiseases = getAllDiseases().filter(d =>
+        ['roundworms', 'hookworms'].includes(d.id)
+    );
+
+    // Handle clicking on a disease to show info modal
+    const handleDiseaseClick = (diseaseId: string) => {
+        const disease = getDiseaseById(diseaseId);
+        if (disease) {
+            setSelectedDisease(disease);
+            setShowDiseaseModal(true);
+        }
+    };
+
+    // Listen for navigation events from Vaccines page
+    useEffect(() => {
+        const handleNavigateToDisease = (event: CustomEvent<{ diseaseId: string }>) => {
+            const diseaseId = event.detail.diseaseId;
+            // Expand the vaccines section
+            setExpandedId('vaccines-encyclopedia');
+            // Show the disease modal
+            handleDiseaseClick(diseaseId);
+        };
+
+        window.addEventListener('navigateToDisease', handleNavigateToDisease as EventListener);
+        return () => {
+            window.removeEventListener('navigateToDisease', handleNavigateToDisease as EventListener);
+        };
+    }, []);
 
     return (
         <div className="space-y-8 animate-fade-in pb-24">
@@ -325,6 +367,198 @@ export function ResourceHub() {
                         All calculations in this app are powered by peer-reviewed veterinary science.
                         Explore each resource to understand the methodology behind your puppy's care plan.
                     </p>
+                </div>
+            </div>
+
+            {/* Vaccines & Disease Encyclopedia - NEW SECTION */}
+            <div className="space-y-5" id="vaccines-encyclopedia">
+                <div className="flex items-center gap-2 px-1">
+                    <Syringe className="w-4 h-4 text-[var(--color-primary)]" />
+                    <h3 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">
+                        Vaccines & Disease Encyclopedia
+                    </h3>
+                </div>
+
+                {/* Main Vaccines Encyclopedia Card */}
+                <div className="glass-card-interactive overflow-hidden">
+                    <button
+                        className="w-full text-left p-5 transition-all duration-300"
+                        onClick={() => setExpandedId(expandedId === 'vaccines-encyclopedia' ? null : 'vaccines-encyclopedia')}
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="relative">
+                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-xl shadow-blue-500/30 ring-4 ring-blue-500/20">
+                                    <Syringe className="w-7 h-7" />
+                                </div>
+                                <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center ring-2 ring-[var(--bg-card)]">
+                                    <Shield className="w-2.5 h-2.5 text-white" />
+                                </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h3 className="font-bold text-[var(--text-primary)] text-lg leading-tight">
+                                    Vaccine-Preventable Diseases
+                                </h3>
+                                <p className="text-xs text-[var(--text-muted)] mt-0.5 font-medium flex items-center gap-1">
+                                    <span className="inline-block w-2 h-2 rounded-full bg-blue-500" />
+                                    Comprehensive Disease Guide • Tap Any for Details
+                                </p>
+                            </div>
+                            <div className={`text-[var(--text-muted)] transition-transform duration-300 ${expandedId === 'vaccines-encyclopedia' ? 'rotate-180' : 'rotate-0'}`}>
+                                <ChevronDown className="w-5 h-5" />
+                            </div>
+                        </div>
+                    </button>
+
+                    {expandedId === 'vaccines-encyclopedia' && (
+                        <div className="px-5 pb-5 pt-0 animate-slide-down">
+                            <div className="glass-panel p-5 space-y-6">
+                                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                                    Vaccines protect your puppy from serious, often fatal diseases. Tap any disease below to learn about symptoms, transmission, survival rates, and long-term effects.
+                                </p>
+
+                                {/* Core Vaccines Section */}
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                                            <AlertTriangle className="w-3.5 h-3.5 text-white" />
+                                        </div>
+                                        <h4 className="font-bold text-sm text-[var(--text-primary)]">Core Vaccines (Required)</h4>
+                                        <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">DAPP</span>
+                                    </div>
+                                    <p className="text-xs text-[var(--text-muted)] ml-8">
+                                        These are essential for ALL dogs regardless of lifestyle. The "DAPP" vaccine covers all four.
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 ml-8">
+                                        {coreVaccineDiseases.map((disease) => (
+                                            <button
+                                                key={disease.id}
+                                                onClick={() => handleDiseaseClick(disease.id)}
+                                                className="group flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-[var(--bg-muted)]/80 to-[var(--bg-card)] border border-[var(--border-color)] hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-lg text-left"
+                                            >
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-lg flex-shrink-0 ${disease.urgencyLevel === 'critical'
+                                                    ? 'bg-gradient-to-br from-red-500 to-rose-600'
+                                                    : disease.urgencyLevel === 'high'
+                                                        ? 'bg-gradient-to-br from-orange-500 to-amber-600'
+                                                        : 'bg-gradient-to-br from-blue-500 to-cyan-600'
+                                                    }`}>
+                                                    {disease.emoji}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-sm font-bold text-[var(--text-primary)] group-hover:text-blue-600 dark:group-hover:text-blue-400 truncate">{disease.name}</p>
+                                                        {disease.urgencyLevel === 'critical' && (
+                                                            <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300">
+                                                                Critical
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-[10px] text-[var(--text-muted)] truncate">{disease.type} • {disease.prognosis.survivalRate} survival</p>
+                                                </div>
+                                                <ChevronRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-blue-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Expanded Protection Section */}
+                                <div className="space-y-3 pt-4 border-t border-[var(--border-color)]">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                                            <Shield className="w-3.5 h-3.5 text-white" />
+                                        </div>
+                                        <h4 className="font-bold text-sm text-[var(--text-primary)]">Expanded Protection</h4>
+                                        <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">Lifestyle-Based</span>
+                                    </div>
+                                    <p className="text-xs text-[var(--text-muted)] ml-8">
+                                        Recommended based on your puppy's lifestyle, location, and exposure risk.
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 ml-8">
+                                        {expandedVaccineDiseases.map((disease) => (
+                                            <button
+                                                key={disease.id}
+                                                onClick={() => handleDiseaseClick(disease.id)}
+                                                className="group flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-[var(--bg-muted)]/80 to-[var(--bg-card)] border border-[var(--border-color)] hover:border-emerald-400 dark:hover:border-emerald-500 transition-all hover:shadow-lg text-left"
+                                            >
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-lg flex-shrink-0 ${disease.urgencyLevel === 'critical'
+                                                    ? 'bg-gradient-to-br from-red-500 to-rose-600'
+                                                    : disease.urgencyLevel === 'high'
+                                                        ? 'bg-gradient-to-br from-orange-500 to-amber-600'
+                                                        : 'bg-gradient-to-br from-emerald-500 to-teal-600'
+                                                    }`}>
+                                                    {disease.emoji}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-sm font-bold text-[var(--text-primary)] group-hover:text-emerald-600 dark:group-hover:text-emerald-400 truncate">{disease.name}</p>
+                                                        {disease.urgencyLevel === 'critical' && (
+                                                            <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300">
+                                                                Critical
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-[10px] text-[var(--text-muted)] truncate">{disease.type} • {disease.prognosis.survivalRate} survival</p>
+                                                </div>
+                                                <ChevronRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-emerald-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Parasites Section */}
+                                <div className="space-y-3 pt-4 border-t border-[var(--border-color)]">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+                                            <Bug className="w-3.5 h-3.5 text-white" />
+                                        </div>
+                                        <h4 className="font-bold text-sm text-[var(--text-primary)]">Intestinal Parasites</h4>
+                                        <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">Deworming</span>
+                                    </div>
+                                    <p className="text-xs text-[var(--text-muted)] ml-8">
+                                        Regular deworming protects against common parasites. All puppies should be assumed infected.
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 ml-8">
+                                        {parasiteDiseases.map((disease) => (
+                                            <button
+                                                key={disease.id}
+                                                onClick={() => handleDiseaseClick(disease.id)}
+                                                className="group flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-[var(--bg-muted)]/80 to-[var(--bg-card)] border border-[var(--border-color)] hover:border-amber-400 dark:hover:border-amber-500 transition-all hover:shadow-lg text-left"
+                                            >
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-lg flex-shrink-0 ${disease.urgencyLevel === 'high'
+                                                    ? 'bg-gradient-to-br from-orange-500 to-amber-600'
+                                                    : 'bg-gradient-to-br from-amber-500 to-yellow-600'
+                                                    }`}>
+                                                    {disease.emoji}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-bold text-[var(--text-primary)] group-hover:text-amber-600 dark:group-hover:text-amber-400 truncate">{disease.name}</p>
+                                                    <p className="text-[10px] text-[var(--text-muted)] truncate">{disease.type} • Treatable with dewormers</p>
+                                                </div>
+                                                <ChevronRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-amber-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Quick Stats Banner */}
+                                <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-500/10 via-violet-500/10 to-fuchsia-500/10 border border-violet-500/20">
+                                    <div className="grid grid-cols-3 gap-4 text-center">
+                                        <div>
+                                            <p className="text-2xl font-black text-[var(--text-primary)]">10+</p>
+                                            <p className="text-[10px] text-[var(--text-muted)] uppercase font-medium">Diseases Covered</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">95%+</p>
+                                            <p className="text-[10px] text-[var(--text-muted)] uppercase font-medium">Vaccine Effectiveness</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-2xl font-black text-blue-600 dark:text-blue-400">3-4</p>
+                                            <p className="text-[10px] text-[var(--text-muted)] uppercase font-medium">Shots in Series</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -644,6 +878,18 @@ export function ResourceHub() {
                     </p>
                 </div>
             </div>
+
+            {/* Disease Info Modal */}
+            {selectedDisease && (
+                <DiseaseInfoModal
+                    disease={selectedDisease}
+                    isOpen={showDiseaseModal}
+                    onClose={() => {
+                        setShowDiseaseModal(false);
+                        setSelectedDisease(null);
+                    }}
+                />
+            )}
         </div>
     );
 }

@@ -11,12 +11,17 @@ import {
     Hash,
     Search,
     Sparkles,
-    X
+    X,
+    BookOpen,
+    Info,
+    ExternalLink
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import type { HealthScheduleEntry, VaccineType, VaccineBrandMapping } from '../types';
 import { VACCINE_COMPOSITION, findVaccineMatches } from '../types';
 import { getAlertStatus } from '../utils/vetFormulas';
+import { DiseaseInfoModal } from './DiseaseInfoModal';
+import { getDiseasesByVaccineType, getDiseaseById, type DiseaseInfo } from '../data/diseaseInfo';
 
 interface VaccineManagerProps {
     birthDate: string | null;
@@ -73,6 +78,28 @@ export function VaccineManager({
     const [smartEntryDate, setSmartEntryDate] = useState(new Date().toISOString().split('T')[0]);
     const [smartEntryAdmin, setSmartEntryAdmin] = useState('');
     const [smartEntryLot, setSmartEntryLot] = useState('');
+
+    // Disease Info Modal state
+    const [selectedDisease, setSelectedDisease] = useState<DiseaseInfo | null>(null);
+    const [showDiseaseModal, setShowDiseaseModal] = useState(false);
+
+    // Handle clicking on a disease to show info modal
+    const handleDiseaseClick = (diseaseId: string) => {
+        const disease = getDiseaseById(diseaseId);
+        if (disease) {
+            setSelectedDisease(disease);
+            setShowDiseaseModal(true);
+        }
+    };
+
+    // Navigate to Learn page with disease section
+    const handleLearnMore = (diseaseId: string) => {
+        // This will scroll to the disease section on the Learn page
+        // We dispatch a custom event that the App can listen to
+        const event = new CustomEvent('navigateToDisease', { detail: { diseaseId } });
+        window.dispatchEvent(event);
+        setShowDiseaseModal(false);
+    };
 
     // Filter vaccine matches based on search input
     const vaccineMatches = useMemo(() => {
@@ -313,18 +340,33 @@ export function VaccineManager({
                                         </div>
                                     </div>
 
-                                    {/* Vaccine Components */}
-                                    <div className="p-3 bg-violet-50 rounded-xl border border-violet-200">
-                                        <p className="text-[10px] font-bold text-violet-800 uppercase tracking-wider mb-2">
-                                            Protects Against:
-                                        </p>
-                                        <div className="flex flex-wrap gap-1">
-                                            {VACCINE_COMPOSITION[selectedBrand.type]?.map((disease, idx) => (
-                                                <span key={idx} className="px-2 py-1 bg-white rounded-lg text-[10px] font-medium text-violet-700 border border-violet-200">
-                                                    {disease}
-                                                </span>
+                                    {/* Vaccine Components - Interactive Disease Cards */}
+                                    <div className="p-3 bg-violet-50 dark:bg-violet-900/20 rounded-xl border border-violet-200 dark:border-violet-800">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="text-[10px] font-bold text-violet-800 dark:text-violet-300 uppercase tracking-wider">
+                                                Protects Against:
+                                            </p>
+                                            <span className="text-[9px] text-violet-600 dark:text-violet-400 flex items-center gap-1">
+                                                <Info className="w-3 h-3" />
+                                                Tap for details
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {getDiseasesByVaccineType(selectedBrand.type).map((disease) => (
+                                                <button
+                                                    key={disease.id}
+                                                    onClick={() => handleDiseaseClick(disease.id)}
+                                                    className="group flex items-center gap-1.5 px-2.5 py-1.5 bg-white dark:bg-slate-800 rounded-lg text-[10px] font-medium text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-700 hover:border-violet-400 dark:hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/40 transition-all hover:scale-[1.02] cursor-pointer"
+                                                >
+                                                    <span>{disease.emoji}</span>
+                                                    <span>{disease.name}</span>
+                                                    <ExternalLink className="w-2.5 h-2.5 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                </button>
                                             ))}
                                         </div>
+                                        <p className="text-[9px] text-violet-500 dark:text-violet-500 mt-2 italic">
+                                            Learn about symptoms, transmission, and survival rates
+                                        </p>
                                     </div>
 
                                     {/* Next pending entry info */}
@@ -633,47 +675,96 @@ export function VaccineManager({
                 </div>
             ))}
 
-            {/* Educational Note */}
-            <div className="card bg-gradient-to-r from-blue-50 to-indigo-50">
+            {/* Interactive Disease Guide */}
+            <div className="card bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
                 <div className="space-y-4">
                     <div className="flex gap-3">
                         <div className="text-2xl">📚</div>
                         <div>
-                            <p className="font-medium text-slate-800 text-sm">Understanding Multi-Way Vaccines</p>
-                            <p className="text-xs text-slate-600 mt-1">
+                            <p className="font-medium text-slate-800 dark:text-slate-200 text-sm">Understanding Multi-Way Vaccines</p>
+                            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                                 The number (5-way, 9-way, etc.) refers to how many diseases the shot protects against.
+                                <span className="text-blue-600 dark:text-blue-400 font-medium"> Tap any disease for detailed info.</span>
                             </p>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="bg-white/50 p-2 rounded-lg">
-                            <h4 className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Core Protection (5-Way)</h4>
-                            <ul className="text-[10px] text-slate-600 list-disc list-inside mt-1">
-                                <li><strong>Distemper:</strong> Severe respiratory/nervous system virus</li>
-                                <li><strong>Parvovirus:</strong> Highly fatal GI virus</li>
-                                <li><strong>Adenovirus/Hepatitis:</strong> Liver/kidney infection</li>
-                                <li><strong>Parainfluenza:</strong> Respiratory infection</li>
-                            </ul>
+                        <div className="bg-white/60 dark:bg-slate-800/40 p-3 rounded-xl border border-blue-200 dark:border-blue-800">
+                            <div className="flex items-center gap-2 mb-2">
+                                <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                <h4 className="text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Core Protection (5-Way)</h4>
+                            </div>
+                            <div className="space-y-1.5">
+                                {['distemper', 'parvovirus', 'adenovirus', 'parainfluenza'].map((diseaseId) => {
+                                    const disease = getDiseaseById(diseaseId);
+                                    if (!disease) return null;
+                                    return (
+                                        <button
+                                            key={diseaseId}
+                                            onClick={() => handleDiseaseClick(diseaseId)}
+                                            className="w-full flex items-center gap-2 p-2 rounded-lg bg-white/80 dark:bg-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-slate-200 dark:border-slate-600 transition-all text-left group"
+                                        >
+                                            <span className="text-sm">{disease.emoji}</span>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[10px] font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">{disease.name}</p>
+                                                <p className="text-[9px] text-slate-500 dark:text-slate-400 truncate">{disease.shortDescription.substring(0, 50)}...</p>
+                                            </div>
+                                            <Info className="w-3 h-3 text-slate-400 group-hover:text-blue-500 flex-shrink-0" />
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
-                        <div className="bg-white/50 p-2 rounded-lg">
-                            <h4 className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Expanded Protection</h4>
-                            <ul className="text-[10px] text-slate-600 list-disc list-inside mt-1">
-                                <li><strong>Leptospirosis:</strong> Bacterial disease from wildlife urine</li>
-                                <li><strong>Coronavirus:</strong> Gastrointestinal virus</li>
-                                <li><strong>Bordetella:</strong> "Kennel Cough" respiratory bacteria</li>
-                            </ul>
+                        <div className="bg-white/60 dark:bg-slate-800/40 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                            <div className="flex items-center gap-2 mb-2">
+                                <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                <h4 className="text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Expanded Protection</h4>
+                            </div>
+                            <div className="space-y-1.5">
+                                {['leptospirosis', 'coronavirus', 'bordetella', 'rabies'].map((diseaseId) => {
+                                    const disease = getDiseaseById(diseaseId);
+                                    if (!disease) return null;
+                                    return (
+                                        <button
+                                            key={diseaseId}
+                                            onClick={() => handleDiseaseClick(diseaseId)}
+                                            className="w-full flex items-center gap-2 p-2 rounded-lg bg-white/80 dark:bg-slate-700/50 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 border border-slate-200 dark:border-slate-600 transition-all text-left group"
+                                        >
+                                            <span className="text-sm">{disease.emoji}</span>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[10px] font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">{disease.name}</p>
+                                                <p className="text-[9px] text-slate-500 dark:text-slate-400 truncate">{disease.shortDescription.substring(0, 50)}...</p>
+                                            </div>
+                                            <Info className="w-3 h-3 text-slate-400 group-hover:text-emerald-500 flex-shrink-0" />
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
 
-                    <div className="pt-2 border-t border-blue-100">
-                        <p className="text-[10px] text-slate-500 italic">
+                    <div className="pt-2 border-t border-blue-100 dark:border-blue-800">
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 italic">
                             Maternal antibodies can interfere with early vaccinations. The 16-week
                             booster ensures protection once maternal immunity wanes (AAHA Guidelines).
                         </p>
                     </div>
                 </div>
             </div>
+
+            {/* Disease Info Modal */}
+            {selectedDisease && (
+                <DiseaseInfoModal
+                    disease={selectedDisease}
+                    isOpen={showDiseaseModal}
+                    onClose={() => {
+                        setShowDiseaseModal(false);
+                        setSelectedDisease(null);
+                    }}
+                    onLearnMore={handleLearnMore}
+                />
+            )}
         </div>
     );
 }
