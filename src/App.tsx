@@ -130,6 +130,7 @@ function App() {
         return (
           <VaccineManager
             birthDate={profile?.birthDate || null}
+            breed={profile?.breed || 'Mixed'}
             healthSchedule={healthSchedule}
             onGenerateSchedule={generateSchedule}
             onUpdateEntry={updateHealthEntry}

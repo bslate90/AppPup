@@ -21,10 +21,12 @@ import type { HealthScheduleEntry, VaccineType, VaccineBrandMapping } from '../t
 import { VACCINE_COMPOSITION, findVaccineMatches } from '../types';
 import { getAlertStatus } from '../utils/vetFormulas';
 import { DiseaseInfoModal } from './DiseaseInfoModal';
+import { LifeStageDashboard } from './LifeStageDashboard';
 import { getDiseasesByVaccineType, getDiseaseById, type DiseaseInfo } from '../data/diseaseInfo';
 
 interface VaccineManagerProps {
     birthDate: string | null;
+    breed: string;
     healthSchedule: HealthScheduleEntry[];
     onGenerateSchedule: (birthDate: Date) => void;
     onUpdateEntry: (id: string, updates: Partial<HealthScheduleEntry>) => void;
@@ -56,6 +58,7 @@ const vaccineEmojis: Record<VaccineType, string> = {
 
 export function VaccineManager({
     birthDate,
+    breed,
     healthSchedule,
     onGenerateSchedule,
     onUpdateEntry,
@@ -241,6 +244,15 @@ export function VaccineManager({
                     </>
                 )}
             </div>
+
+            {/* Life Stage Dashboard - Shows for all dogs with birth dates */}
+            {birthDate && healthSchedule.length > 0 && (
+                <LifeStageDashboard
+                    breed={breed}
+                    birthDate={birthDate}
+                    healthSchedule={healthSchedule}
+                />
+            )}
 
             {/* Smart Vaccine Entry */}
             {healthSchedule.length > 0 && (
