@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSupabaseData } from './hooks/useSupabaseData';
+import { useAuth } from './contexts/AuthContext';
 import type { TabId, WeightUnit } from './types';
 import Header from './components/Header';
 import Navigation from './components/Navigation';
@@ -10,11 +11,17 @@ import GrowthTracker from './components/GrowthTracker';
 import ResourceHub from './components/ResourceHub';
 import EmergencyGuide from './components/EmergencyGuide';
 import ProfileModal from './components/ProfileModal';
+import { FamilySettings } from './components/family/FamilySettings';
 
 function App() {
+  const { userProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showFamilyModal, setShowFamilyModal] = useState(false);
   const [weightUnit, setWeightUnit] = useState<WeightUnit>('oz');
+
+  // Check if user is admin/owner
+  const isAdmin = userProfile?.role === 'owner' || userProfile?.role === 'trainer';
 
   // Dark mode state with localStorage persistence
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -105,6 +112,7 @@ function App() {
             onExport={exportVetReport}
             onSetupProfile={() => setShowProfileModal(true)}
             onUnitChange={setWeightUnit}
+            onShareFamily={() => setShowFamilyModal(true)}
           />
         );
 
@@ -166,7 +174,13 @@ function App() {
   return (
     <div className="min-h-screen pb-20">
       {/* Header */}
-      <Header puppyName={profile?.name} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
+      <Header
+        puppyName={profile?.name}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={toggleDarkMode}
+        isAdmin={isAdmin}
+        onManageFamily={() => setShowFamilyModal(true)}
+      />
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto p-4">
@@ -184,6 +198,27 @@ function App() {
         onSave={updateProfile}
         onGenerateSchedule={generateSchedule}
       />
+
+      {/* Family Settings Modal */}
+      {showFamilyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 rounded-2xl shadow-2xl">
+            <div className="sticky top-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 p-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Family Settings</h2>
+              <button
+                onClick={() => setShowFamilyModal(false)}
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"
+                aria-label="Close family settings"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4">
+              <FamilySettings />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

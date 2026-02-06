@@ -5,7 +5,8 @@ import {
     Download,
     Sparkles,
     Plus,
-    Bell
+    Bell,
+    Users
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import type { PuppyProfile, HealthScheduleEntry, WeightUnit } from '../types';
@@ -22,6 +23,7 @@ interface DashboardProps {
     onExport: () => void;
     onSetupProfile: () => void;
     onUnitChange: (unit: WeightUnit) => void;
+    onShareFamily?: () => void;
 }
 
 export function Dashboard({
@@ -33,6 +35,7 @@ export function Dashboard({
     onExport,
     onSetupProfile,
     onUnitChange,
+    onShareFamily,
 }: DashboardProps) {
     // If no profile, show setup prompt
     if (!profile) {
@@ -217,6 +220,26 @@ export function Dashboard({
                             <p className="text-slate-600">{format(birthDate, 'MMMM d, yyyy')}</p>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Share with Family */}
+            {onShareFamily && (
+                <div className="card bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-dashed border-blue-200 dark:border-blue-700">
+                    <button
+                        onClick={onShareFamily}
+                        className="w-full flex items-center justify-center gap-3 py-4 text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200 transition-colors"
+                    >
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
+                            <Users className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="text-left">
+                            <p className="font-bold">Share with Family or Vet</p>
+                            <p className="text-sm text-blue-600 dark:text-blue-400">
+                                Give others access to view your pup's data
+                            </p>
+                        </div>
+                    </button>
                 </div>
             )}
         </div>
