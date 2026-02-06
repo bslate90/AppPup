@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { ResetPasswordPage } from './ResetPasswordPage';
+import { WalkingDogLoader } from '../common/WalkingDogLoader';
 
 type CallbackStatus = 'loading' | 'success' | 'error' | 'recovery';
 
@@ -100,6 +101,11 @@ export function AuthCallback() {
         handleAuthCallback();
     }, []);
 
+    // Show walking dog loader while processing
+    if (status === 'loading') {
+        return <WalkingDogLoader message="Verifying your account" />;
+    }
+
     // Show password reset page for recovery flow
     if (status === 'recovery') {
         return <ResetPasswordPage />;
@@ -125,15 +131,6 @@ export function AuthCallback() {
 
                         {/* Status Display */}
                         <div className="text-center">
-                            {status === 'loading' && (
-                                <div className="space-y-4">
-                                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30">
-                                        <Loader2 className="w-8 h-8 text-amber-600 animate-spin" />
-                                    </div>
-                                    <p className="text-slate-600 dark:text-slate-300 font-medium">{message}</p>
-                                </div>
-                            )}
-
                             {status === 'success' && (
                                 <div className="space-y-4">
                                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 animate-bounce">
