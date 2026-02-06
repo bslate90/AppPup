@@ -230,7 +230,7 @@ export function getNextLifeStageTransition(breed: string, ageMonths: number): {
 } | null {
     const size = getBreedSize(breed);
     const lifespanInfo = LIFESPAN_BY_SIZE[size];
-    const currentStage = getLifeStage(breed, ageMonths);
+
 
     const lifespanMonths = lifespanInfo.averageYears * 12;
 

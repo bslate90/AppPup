@@ -4,7 +4,6 @@ import {
     Plus,
     Check,
     Users,
-    Dog,
     X
 } from 'lucide-react';
 import { usePups, type PupProfile } from '../../contexts/PupContext';
