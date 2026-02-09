@@ -28,16 +28,16 @@ function isAuthCallback(): boolean {
             return true;
         }
 
-        // Check for type=recovery or type=signup in hash
-        if (hash.includes('type=recovery') || hash.includes('type=signup')) {
+        // Check for Supabase auth types in hash (recovery, signup, email verification, magiclink, invite)
+        if (hash.includes('type=recovery') || hash.includes('type=signup') || hash.includes('type=email') || hash.includes('type=magiclink') || hash.includes('type=invite')) {
             return true;
         }
     }
 
     // Check query params
     if (search.length > 1) {
-        // Check for type=recovery or type=signup in query params
-        if (search.includes('type=recovery') || search.includes('type=signup')) {
+        // Check for Supabase auth types in query params
+        if (search.includes('type=recovery') || search.includes('type=signup') || search.includes('type=email') || search.includes('type=magiclink') || search.includes('type=invite')) {
             return true;
         }
 
