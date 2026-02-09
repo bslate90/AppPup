@@ -54,12 +54,17 @@ export function useSupabaseData() {
                 setLoading(true);
                 setError(null);
 
-                // Load profile (single row for now)
-                const { data: profileData } = await supabase
+                // Load profile (single row for now) - use maybeSingle() to handle no pups gracefully
+                const { data: profileData, error: profileError } = await supabase
                     .from('puppy_profiles')
                     .select('*')
                     .limit(1)
-                    .single();
+                    .maybeSingle();
+
+                // If there's an error other than "no rows", throw it
+                if (profileError && profileError.code !== 'PGRST116') {
+                    throw profileError;
+                }
 
                 if (profileData) {
                     setProfile(toCamelCase<PuppyProfile>(profileData));

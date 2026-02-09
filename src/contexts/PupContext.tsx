@@ -81,14 +81,23 @@ export function PupProvider({ children }: { children: ReactNode }) {
             // Load shared pups via household (fail gracefully)
             let householdPups: typeof ownPups = [];
             try {
-                const { data } = await supabase
-                    .from('puppy_profiles')
-                    .select('*')
-                    .not('owner_id', 'eq', user.id)
-                    .not('household_id', 'is', null);
+                // First, get the user's household membership
+                const { data: memberData } = await supabase
+                    .from('household_members')
+                    .select('household_id')
+                    .eq('user_id', user.id)
+                    .maybeSingle();
 
-                // TODO: Filter by actual household membership once implemented
-                householdPups = data || [];
+                // If user is in a household, load pups from that household
+                if (memberData?.household_id) {
+                    const { data } = await supabase
+                        .from('puppy_profiles')
+                        .select('*')
+                        .eq('household_id', memberData.household_id)
+                        .neq('owner_id', user.id);
+
+                    householdPups = data || [];
+                }
             } catch (householdErr) {
                 console.warn('Could not load household pups:', householdErr);
                 // Continue without shared pups
