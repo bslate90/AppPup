@@ -11,6 +11,7 @@ import GrowthTracker from './components/GrowthTracker';
 import ResourceHub from './components/ResourceHub';
 import EmergencyGuide from './components/EmergencyGuide';
 import ProfileModal from './components/ProfileModal';
+import Footer from './components/Footer';
 import { FamilySettings } from './components/family/FamilySettings';
 
 function App() {
@@ -186,6 +187,9 @@ function App() {
       <main className="max-w-4xl mx-auto p-4">
         {renderContent()}
       </main>
+
+      {/* Footer */}
+      <Footer />
 
       {/* Bottom Navigation */}
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
