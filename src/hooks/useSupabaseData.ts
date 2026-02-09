@@ -114,7 +114,7 @@ export function useSupabaseData() {
             const { id: frontendId, ...profileWithoutId } = newProfile;
             const dbData = toSnakeCase(profileWithoutId);
 
-            console.log('Saving profile to Supabase:', dbData);
+            // Removed console.log to prevent sensitive data exposure
 
             if (profile?.id) {
                 // Update existing - use the database UUID
@@ -163,7 +163,7 @@ export function useSupabaseData() {
                 // Ensure type is set if missing
                 type: food.type || 'food'
             };
-            console.log('Inserting food brand with data:', dbData);
+            // Removed console.log to prevent sensitive data exposure
 
             const { data, error } = await supabase
                 .from('food_settings')

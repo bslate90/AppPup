@@ -184,7 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const dbUpdates: Record<string, unknown> = {};
             if (updates.displayName) dbUpdates.display_name = updates.displayName;
             if (updates.avatarUrl) dbUpdates.avatar_url = updates.avatarUrl;
-            if (updates.role) dbUpdates.role = updates.role;
+            // Note: Role updates removed for security - should only be done server-side
 
             const { error } = await supabase
                 .from('user_profiles')
