@@ -42,6 +42,7 @@ export function FamilySettings() {
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [joinCode, setJoinCode] = useState('');
     const [joinError, setJoinError] = useState<string | null>(null);
+    const [createError, setCreateError] = useState<string | null>(null);
     const [createName, setCreateName] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -112,9 +113,11 @@ export function FamilySettings() {
     const createHousehold = async () => {
         if (!user || !createName.trim()) return;
 
+        setCreateError(null);
+
         try {
             // Create the household
-            const { data: newHousehold, error: createError } = await supabase
+            const { data: newHousehold, error: insertError } = await supabase
                 .from('households')
                 .insert({
                     name: createName.trim(),
@@ -123,10 +126,19 @@ export function FamilySettings() {
                 .select()
                 .single();
 
-            if (createError) throw createError;
+            if (insertError) {
+                console.error('Error creating household:', insertError);
+                setCreateError(insertError.message || 'Failed to create family. Please try again.');
+                return;
+            }
+
+            if (!newHousehold) {
+                setCreateError('Failed to create family. Please try again.');
+                return;
+            }
 
             // Add user as owner member
-            await supabase
+            const { error: memberError } = await supabase
                 .from('household_members')
                 .insert({
                     household_id: newHousehold.id,
@@ -134,11 +146,18 @@ export function FamilySettings() {
                     role: 'owner',
                 });
 
+            if (memberError) {
+                console.error('Error adding member:', memberError);
+                // Family was created but member add failed - still close modal and reload
+            }
+
             setShowCreateModal(false);
             setCreateName('');
+            setCreateError(null);
             loadHousehold();
         } catch (err) {
             console.error('Error creating household:', err);
+            setCreateError(err instanceof Error ? err.message : 'An unexpected error occurred.');
         }
     };
 
@@ -472,7 +491,7 @@ export function FamilySettings() {
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-bold text-slate-800 dark:text-white">Create Family</h3>
                             <button
-                                onClick={() => setShowCreateModal(false)}
+                                onClick={() => { setShowCreateModal(false); setCreateError(null); }}
                                 className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
                                 title="Close dialog"
                                 aria-label="Close create family dialog"
@@ -484,6 +503,13 @@ export function FamilySettings() {
                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
                             Give your family a name. You'll be able to invite others after creating it.
                         </p>
+
+                        {createError && (
+                            <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4 text-red-500" />
+                                <p className="text-sm text-red-600 dark:text-red-400">{createError}</p>
+                            </div>
+                        )}
 
                         <input
                             type="text"
